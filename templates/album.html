@@ -1,0 +1,94 @@
+<div class="tab-panel album-panel">
+    <!-- Slot Fine Tuning: panel Pre-Master dipindah ke sini saat tab Album aktif -->
+    <div id="albumFineTuningSlot" class="album-ft-slot"></div>
+
+    <div class="album-layout">
+        <div class="panel-left">
+            <div class="card">
+                <div class="card-header"><h3>Album Mastering</h3></div>
+                <div class="card-body">
+                    <div class="drop-zone" id="albumDropZone">
+                        <div class="drop-icon">&#9835;</div>
+                        <p>Drag &amp; drop up to 15 tracks<br>or click to browse</p>
+                        <input type="file" id="albumFileInput" accept="audio/*" multiple hidden>
+                    </div>
+                    <div class="album-count" id="albumCount">0 / 15 tracks</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h3>Album Settings</h3></div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <label>Album Name</label>
+                        <input type="text" id="albumName" class="text-input" placeholder="My Album" value="My Album">
+                    </div>
+                    <div class="setting-row">
+                        <label>Genre Preset</label>
+                        <select id="albumGenre">
+                            <option value="pop">Pop</option>
+                            <option value="rock">Rock</option>
+                            <option value="hiphop">Hip-Hop</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="jazz">Jazz</option>
+                            <option value="classical">Classical</option>
+                            <option value="acoustic">Acoustic</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Platform Target</label>
+                        <select id="albumPlatform">
+                            <option value="spotify">Spotify (-14 LUFS)</option>
+                            <option value="youtube">YouTube (-14 LUFS)</option>
+                            <option value="apple">Apple Music (-16 LUFS)</option>
+                            <option value="club">Club / CD (-9 LUFS)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row toggle-labeled">
+                        <label>Adaptive (per track)</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="albumAdaptive" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row toggle-labeled">
+                        <label>Watermark Removal</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="albumWatermark">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row toggle-labeled">
+                        <label>Use Fine Tuning</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="albumFineTune" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p class="album-hint">Adaptive: setiap lagu dianalisis &amp; di-master sesuai mix-nya sendiri. Matikan untuk perlakuan seragam.<br>Fine Tuning: nilai panel Pre-Master di atas (EQ &amp; compressor) dipakai untuk SEMUA lagu album.</p>
+                    <button class="btn btn-accent btn-block" id="btnAlbumMaster" disabled>
+                        <span class="btn-label">&#9733; Master Album</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="card" id="albumListCard">
+                <div class="card-header">
+                    <h3>Tracks</h3>
+                    <span class="album-preview-hint">Klik judul lagu untuk preview A / B di player bawah</span>
+                </div>
+                <div class="card-body">
+                    <div class="album-tracks" id="albumTracks">
+                        <div class="album-empty" id="albumEmpty">Belum ada lagu. Tambahkan hingga 15 track untuk mulai.</div>
+                    </div>
+                    <div class="album-actions" id="albumActions" style="display:none">
+                        <button class="btn btn-accent" id="btnAlbumDlWav" title="Simpan tiap lagu sebagai file WAV di folder Downloads/&lt;nama album&gt;">&#8681; Download WAV</button>
+                        <button class="btn btn-accent" id="btnAlbumDlZip" title="Simpan satu file ZIP berisi semua lagu di folder Downloads">&#8681; Download ZIP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRCmasteringStudio — Audio Mastering Suite</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <img class="logo-mark" src="/static/img/logo_cyan.png" alt="G.R.C">
+                <h1>GRCmastering<span class="accent">Studio</span></h1>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" data-tab="master">
+                    <span class="nav-icon">&#9733;</span> Master
+                </button>
+                <button class="nav-btn" data-tab="album">
+                    <span class="nav-icon">&#9835;</span> Album
+                </button>
+                <button class="nav-btn" data-tab="convert">
+                    <span class="nav-icon">&#8593;</span> Convert
+                </button>
+            </nav>
+        </header>
+
+        <main class="app-main">
+            <section class="tab-content active" id="tab-master">
+                {% include 'masterer.html' %}
+            </section>
+            <section class="tab-content" id="tab-convert">
+                {% include 'converter.html' %}
+            </section>
+            <section class="tab-content" id="tab-album">
+                {% include 'album.html' %}
+            </section>
+        </main>
+
+        <div class="global-upload-overlay" id="uploadOverlay">
+            <div class="upload-area-global">
+                <div class="upload-icon">&#9733;</div>
+                <h2>Drop your audio file here</h2>
+                <p>MP3, WAV, FLAC, OGG, AIFF, M4A (max 500MB)</p>
+            </div>
+        </div>
+
+        <div class="player-bar" id="playerBar">
+            <div class="player-top">
+                <div class="player-info">
+                    <span id="playerFilename">No file loaded</span>
+                </div>
+                <div class="player-controls">
+                    <button class="player-btn" id="btnAbOriginal" title="A: Original">A</button>
+                    <button class="player-btn" id="btnPlay" title="Play/Pause">&#9654;</button>
+                    <button class="player-btn" id="btnAbProcessed" title="B: Processed">B</button>
+                    <button class="player-btn" id="btnAbRef" title="R: Reference" disabled>R</button>
+                </div>
+                <div class="pb-meters">
+                    <div class="led-win">LUFS-S <span id="pmLufs">--.-</span></div>
+                    <div class="led-win">RMS <span id="pmRms">--.-</span></div>
+                    <div class="out-meter pb-peak" id="pmPeak" title="Peak"><i></i></div>
+                </div>
+                <div class="player-time">
+                    <span id="playerCurrent">0:00</span> / <span id="playerDuration">0:00</span>
+                </div>
+                <div class="player-volume">
+                    <input type="range" id="playerVolume" min="0" max="100" value="80">
+                </div>
+            </div>
+            <div class="player-waveform" id="playerWaveform">
+                <canvas id="waveformCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+
+    <!-- License Activation -->
+    <div class="license-overlay" id="licenseOverlay" style="display:none">
+        <div class="card license-card">
+            <h2>Activate GRCmasteringStudio</h2>
+            <p>Send this Hardware ID to get your license key, then paste the key below.</p>
+            <div class="hwid-box">
+                <div class="led-win"><span id="licHwid">----</span></div>
+                <button class="btn btn-sm" id="licCopy">Copy</button>
+            </div>
+            <textarea id="licKey" placeholder="Paste license key here..."></textarea>
+            <button class="btn btn-accent btn-block" id="licActivate">Activate</button>
+            <div class="license-status" id="licStatus"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/knob.js"></script>
+    <script src="/static/js/analyzer_panel.js"></script>
+    <script src="/static/js/uploader.js"></script>
+    <script src="/static/js/album.js"></script>
+    <script src="/static/js/player.js"></script>
+    <script src="/static/js/preview.js"></script>
+    <script src="/static/js/license.js"></script>
+    <script src="/static/js/equalizer.js"></script>
+    <script src="/static/js/visualizer.js"></script>
+</body>
+</html>

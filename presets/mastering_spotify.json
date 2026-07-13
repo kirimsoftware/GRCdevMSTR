@@ -1,0 +1,10 @@
+{
+  "type": "mastering",
+  "name": "Spotify Master",
+  "platform": "spotify",
+  "target_lufs": -14.0,
+  "true_peak_limit": -1.0,
+  "stereo_width": 110,
+  "bass_mono": true,
+  "genre": "pop"
+}

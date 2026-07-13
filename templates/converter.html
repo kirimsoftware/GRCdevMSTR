@@ -1,0 +1,121 @@
+<div class="tab-panel convert-panel">
+    <div class="panel-grid">
+        <div class="panel-left">
+            <div class="card upload-card" id="uploadCard">
+                <div class="card-header">
+                    <h3>Upload Audio</h3>
+                </div>
+                <div class="card-body">
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-icon">&#9733;</div>
+                        <p>Drag & drop audio file here<br>or click to browse</p>
+                        <input type="file" id="fileInput" accept=".mp3,.wav,.flac,.ogg,.aiff,.m4a" hidden>
+                    </div>
+                    <div class="file-info" id="fileInfo" style="display:none">
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                        <button class="btn btn-sm btn-danger" id="btnRemoveFile">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card settings-card">
+                <div class="card-header"><h3>Output Settings</h3></div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <label>Output Format</label>
+                        <select id="convertFormat">
+                            <option value="wav24" selected>WAV 24-bit</option>
+                            <option value="wav16">WAV 16-bit (CD)</option>
+                            <option value="flac">FLAC (lossless)</option>
+                            <option value="mp3_320">MP3 320 kbps</option>
+                            <option value="mp3_v0">MP3 V0 (VBR)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Sample Rate</label>
+                        <select id="convertSampleRate">
+                            <option value="44100">44.1 kHz</option>
+                            <option value="48000">48 kHz</option>
+                            <option value="88200">88.2 kHz</option>
+                            <option value="96000">96 kHz</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Loudness Normalize (-14 LUFS)</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="convertNormalize">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <label>Air Enhance <small>(fix dull / lacking air)</small></label>
+                        <label class="toggle">
+                            <input type="checkbox" id="convertAirEnhance">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <label>Watermark Removal</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="convertRemoveWm">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" id="btnConvert" disabled>
+                &#9654; Convert Audio
+            </button>
+        </div>
+
+        <div class="panel-right">
+            <div class="card brand-card" id="brandCard">
+                <div class="brand-photo" id="brandPhoto">
+                    <!-- Ganti background-image di CSS .brand-photo dengan foto Anda -->
+                    <div class="brand-photo-inner"></div>
+                </div>
+                <div class="brand-credit">Created by @GitaRoni 2026</div>
+            </div>
+
+            <div class="card progress-card" id="progressCard" style="display:none">
+                <div class="card-header"><h3>Processing</h3></div>
+                <div class="card-body">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="progressPercent">0%</span>
+                        <span id="progressMessage">Waiting...</span>
+                    </div>
+                    <div class="progress-steps" id="progressSteps">
+                        <div class="step" data-step="decode">&#9632; Decode</div>
+                        <div class="step" data-step="watermark">&#9632; Watermark</div>
+                        <div class="step" data-step="lufs">&#9632; LUFS</div>
+                        <div class="step" data-step="limiter">&#9632; Limiter</div>
+                        <div class="step" data-step="export">&#9632; Export</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card analysis-card" id="analysisCard" style="display:none">
+                <div class="card-header"><h3>Analysis</h3></div>
+                <div class="card-body">
+                    <div class="canvas-container">
+                        <canvas id="spectrumCanvas"></canvas>
+                    </div>
+                    <div class="stats-grid" id="statsGrid"></div>
+                </div>
+            </div>
+
+            <div class="card result-card" id="resultCard" style="display:none">
+                <div class="card-header"><h3>Result</h3></div>
+                <div class="card-body">
+                    <div class="result-stats" id="resultStats"></div>
+                    <a class="btn btn-accent btn-block" id="btnDownload" href="#" download>Download WAV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

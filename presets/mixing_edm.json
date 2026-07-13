@@ -1,0 +1,15 @@
+{
+  "type": "mixing",
+  "name": "EDM Mix",
+  "genre": "edm",
+  "eq": {
+    "32": 3.0, "64": 2.5, "125": 0.5, "250": -1.0,
+    "500": -0.5, "1000": 0.5, "2000": 1.5,
+    "4000": 2.0, "8000": 1.5, "16000": 1.0
+  },
+  "compressor": {
+    "threshold": -20, "ratio": 4.0, "attack": 3, "release": 50
+  },
+  "stereo_width": 130,
+  "target_lufs": -18
+}

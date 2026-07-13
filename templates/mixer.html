@@ -1,0 +1,136 @@
+<div class="tab-panel mixer-panel">
+    <div class="panel-grid">
+        <div class="panel-left">
+            <div class="card upload-card">
+                <div class="card-header"><h3>Upload Audio</h3></div>
+                <div class="card-body">
+                    <div class="drop-zone" id="mixDropZone">
+                        <div class="drop-icon">&#9733;</div>
+                        <p>Drag & drop audio file here</p>
+                        <input type="file" id="mixFileInput" accept=".mp3,.wav,.flac,.ogg,.aiff,.m4a" hidden>
+                    </div>
+                    <div class="file-info" id="mixFileInfo" style="display:none">
+                        <span class="file-name" id="mixFileName"></span>
+                        <span class="file-size" id="mixFileSize"></span>
+                        <button class="btn btn-sm btn-danger" id="btnMixRemoveFile">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card eq-card">
+                <div class="card-header">
+                    <h3>8-Band Parametric EQ</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-sm" id="btnEqReset">Reset</button>
+                        <button class="btn btn-sm" id="btnEqAuto">Auto-Correct</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="eq-graph-container">
+                        <canvas id="eqCanvas" width="400" height="200"></canvas>
+                    </div>
+                    <div class="eq-sliders" id="eqSliders"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="card comp-card">
+                <div class="card-header"><h3>Multiband Compressor</h3></div>
+                <div class="card-body">
+                    <div class="comp-bands" id="compBands">
+                        <div class="comp-band">
+                            <label>LOW <small>(20-200Hz)</small></label>
+                            <div class="comp-controls">
+                                <div class="comp-param"><label>Thresh</label><input type="range" id="compLowThresh" min="-40" max="0" value="-18" step="0.5"><span id="compLowThreshVal">-18dB</span></div>
+                                <div class="comp-param"><label>Ratio</label><input type="range" id="compLowRatio" min="1" max="10" value="3" step="0.1"><span id="compLowRatioVal">3:1</span></div>
+                                <div class="comp-param"><label>Attack</label><input type="range" id="compLowAttack" min="1" max="50" value="10"><span id="compLowAttackVal">10ms</span></div>
+                                <div class="comp-param"><label>Release</label><input type="range" id="compLowRelease" min="10" max="500" value="80"><span id="compLowReleaseVal">80ms</span></div>
+                            </div>
+                        </div>
+                        <div class="comp-band">
+                            <label>MID <small>(200-3000Hz)</small></label>
+                            <div class="comp-controls">
+                                <div class="comp-param"><label>Thresh</label><input type="range" id="compMidThresh" min="-40" max="0" value="-20" step="0.5"><span id="compMidThreshVal">-20dB</span></div>
+                                <div class="comp-param"><label>Ratio</label><input type="range" id="compMidRatio" min="1" max="10" value="2.5" step="0.1"><span id="compMidRatioVal">2.5:1</span></div>
+                                <div class="comp-param"><label>Attack</label><input type="range" id="compMidAttack" min="1" max="50" value="8"><span id="compMidAttackVal">8ms</span></div>
+                                <div class="comp-param"><label>Release</label><input type="range" id="compMidRelease" min="10" max="500" value="60"><span id="compMidReleaseVal">60ms</span></div>
+                            </div>
+                        </div>
+                        <div class="comp-band">
+                            <label>HIGH <small>(3000-20000Hz)</small></label>
+                            <div class="comp-controls">
+                                <div class="comp-param"><label>Thresh</label><input type="range" id="compHighThresh" min="-40" max="0" value="-22" step="0.5"><span id="compHighThreshVal">-22dB</span></div>
+                                <div class="comp-param"><label>Ratio</label><input type="range" id="compHighRatio" min="1" max="10" value="2.0" step="0.1"><span id="compHighRatioVal">2:1</span></div>
+                                <div class="comp-param"><label>Attack</label><input type="range" id="compHighAttack" min="1" max="50" value="5"><span id="compHighAttackVal">5ms</span></div>
+                                <div class="comp-param"><label>Release</label><input type="range" id="compHighRelease" min="10" max="500" value="40"><span id="compHighReleaseVal">40ms</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stereo-card">
+                <div class="card-header"><h3>Stereo & Dynamics</h3></div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <label>Stereo Width</label>
+                        <input type="range" id="mixStereoWidth" min="0" max="200" value="100" step="1">
+                        <span id="mixStereoWidthVal">100%</span>
+                    </div>
+                    <div class="setting-row">
+                        <label>Bass Mono (&lt;120Hz)</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="mixBassMono" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <label>Mid Gain</label>
+                        <input type="range" id="mixMidGain" min="-6" max="6" value="0" step="0.5">
+                        <span id="mixMidGainVal">0 dB</span>
+                    </div>
+                    <div class="setting-row">
+                        <label>Side Gain</label>
+                        <input type="range" id="mixSideGain" min="-6" max="6" value="0" step="0.5">
+                        <span id="mixSideGainVal">0 dB</span>
+                    </div>
+                    <div class="setting-row">
+                        <label>Attack (Transient)</label>
+                        <input type="range" id="mixAttack" min="-6" max="6" value="0" step="0.5">
+                        <span id="mixAttackVal">0 dB</span>
+                    </div>
+                    <div class="setting-row">
+                        <label>Sustain (Transient)</label>
+                        <input type="range" id="mixSustain" min="-6" max="6" value="0" step="0.5">
+                        <span id="mixSustainVal">0 dB</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" id="btnMix" disabled>
+                &#9654; Process Mix
+            </button>
+
+            <div class="card progress-card" id="mixProgressCard" style="display:none">
+                <div class="card-header"><h3>Processing</h3></div>
+                <div class="card-body">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="mixProgressBar" style="width:0%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="mixProgressPercent">0%</span>
+                        <span id="mixProgressMessage">Waiting...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card result-card" id="mixResultCard" style="display:none">
+                <div class="card-header"><h3>Result</h3></div>
+                <div class="card-body">
+                    <a class="btn btn-accent btn-block" id="btnMixDownload" href="#" download>Download Mixed WAV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

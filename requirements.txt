@@ -1,0 +1,16 @@
+flask==3.1.0
+numpy==1.26.4
+scipy==1.13.1
+librosa==0.10.2
+# numba & llvmlite dikunci: versi ini punya wheel siap-pakai untuk macOS Intel
+# (x86_64) DAN Apple Silicon (arm64) di Python 3.12. Tanpa kunci ini, pip di
+# runner Intel mengambil numba terbaru yg memaksa compile llvmlite dari source
+# (butuh LLVM/CMake) dan build GAGAL. numba 0.62.1 butuh llvmlite 0.45.x.
+numba==0.62.1
+llvmlite==0.45.1
+soundfile==0.12.1
+pyloudnorm==0.1.0
+pydub==0.25.1
+werkzeug==3.1.3
+cryptography==44.0.0
+imageio-ffmpeg==0.5.1

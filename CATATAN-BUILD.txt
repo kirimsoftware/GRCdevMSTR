@@ -1,0 +1,21 @@
+CATATAN BUILD — GRCmasteringStudio
+===================================
+
+Setelah upload & build selesai, akan ada 3 file hasil di GitHub Actions Artifacts:
+
+  1. GRCmasteringStudio-macos-applesilicon.zip  -> Mac M1/M2/M3/M4 (2020 ke atas, chip Apple)
+  2. GRCmasteringStudio-macos-intel.zip          -> Mac Intel (2020 ke bawah, chip Intel)
+  3. GRCmasteringStudio-windows.zip              -> Windows 10/11 (64-bit)
+
+Cara user tahu Mac-nya yang mana:
+  Menu Apple () > About This Mac > lihat "Chip" atau "Processor"
+   - "Apple M1/M2/M3..." -> pilih applesilicon
+   - "Intel Core..."     -> pilih intel
+
+Catatan runner (teknis):
+ - Intel dibuild di runner macos-15-intel (resmi GitHub, berlaku s/d Agustus 2027).
+ - Apple Silicon dibuild di macos-latest.
+ - Keduanya target minimum macOS 11 Big Sur (MACOSX_DEPLOYMENT_TARGET=11.0).
+
+PENTING: konfirmasi akhir versi Intel bebas bug hanya bisa dengan
+menjalankannya di Mac Intel asli (build server tidak bisa menjamin runtime).

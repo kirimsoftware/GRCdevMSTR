@@ -1,0 +1,267 @@
+<div class="tab-panel masterer-panel">
+
+    <!-- ===== PRE-MASTER CONSOLE (Fine Tuning) — terhubung langsung ke Master ===== -->
+    <div class="card premaster-card">
+        <div class="card-header">
+            <h3>Pre-Master &mdash; Fine Tuning</h3>
+            <div class="card-actions preview-actions">
+                <!-- Meter & monitor IN/OUT/REF disembunyikan: dulu milik Live Preview.
+                     A/B (IN vs OUT) kini dilakukan di player bawah (tombol A/B/R) yang
+                     memutar file render sungguhan. -->
+                <div class="out-meter" id="outMeter" title="Output level" style="display:none"><i></i></div>
+                <span class="out-meter-db" id="outMeterDb" style="display:none">-inf dB</span>
+                <div class="monitor-group" style="display:none">
+                    <button class="btn btn-sm mon-btn" id="btnMonIn" title="Source (before)">IN</button>
+                    <button class="btn btn-sm mon-btn active" id="btnMonOut" title="Processed (after)">OUT</button>
+                    <button class="btn btn-sm mon-btn" id="btnMonRef" title="Reference track" disabled>REF</button>
+                </div>
+                <button class="btn btn-sm" id="btnRefLoad" title="Import reference master">&#8853; Ref</button>
+                <span class="ref-name" id="refName"></span>
+                <input type="file" id="refFileInput" accept=".mp3,.wav,.flac,.ogg,.m4a,.aiff" hidden>
+                <!-- Live Preview disembunyikan: alur baru "Master & Listen" memutar
+                     hasil render sungguhan sebagai OUT (B) di player, jadi realtime
+                     Web Audio tak lagi diperlukan (dulu OUT-nya beda dari render).
+                     Kode Preview sengaja DIPERTAHANKAN karena Match Reference memakainya. -->
+                <button class="btn btn-sm btn-preview" id="btnPreview" style="display:none">&#9654; Live Preview</button>
+
+            </div>
+        </div>
+        <div class="card-body premaster-body" id="preMasterBody">
+            <div class="premaster-grid">
+                <div class="premaster-eq">
+                    <div class="section-label">Parametric EQ <button class="btn btn-sm" id="btnEqReset">Reset</button> <button class="btn btn-sm" id="btnEqAuto">Auto-Correct</button> <button class="btn btn-sm" id="btnEqMatchRef" title="Match EQ to loaded reference track">Match Reference</button></div>
+                    <div class="eq-graph-container">
+                        <canvas id="eqSpectrum" width="400" height="200"></canvas>
+                        <canvas id="eqCanvas" width="400" height="200"></canvas>
+                    </div>
+                    <div class="eq-sliders" id="eqSliders"></div>
+                </div>
+                <div class="premaster-right">
+                    <div class="section-label">Multiband Compressor</div>
+                    <div class="comp-console">
+                        <div class="comp-strip">
+                            <div class="strip-name">LOW <small>20&ndash;200Hz</small></div>
+                            <div class="band-meter" id="meterLow"><i></i></div>
+                            <div class="band-gr">GR <span id="meterLowGr">&mdash;</span></div>
+                            <input type="range" class="knob" id="compLowThresh" data-label="Thresh" data-suffix="dB" min="-40" max="0" value="-18" step="0.5">
+                            <input type="range" class="knob" id="compLowRatio" data-label="Ratio" data-suffix=":1" min="1" max="10" value="3" step="0.1">
+                            <input type="range" class="knob" id="compLowAttack" data-label="Attack" data-suffix="ms" min="1" max="50" value="10" step="1">
+                            <input type="range" class="knob" id="compLowRelease" data-label="Release" data-suffix="ms" min="10" max="500" value="80" step="1">
+                        </div>
+                        <div class="comp-strip">
+                            <div class="strip-name">MID <small>200&ndash;3kHz</small></div>
+                            <div class="band-meter" id="meterMid"><i></i></div>
+                            <div class="band-gr">GR <span id="meterMidGr">&mdash;</span></div>
+                            <input type="range" class="knob" id="compMidThresh" data-label="Thresh" data-suffix="dB" min="-40" max="0" value="-20" step="0.5">
+                            <input type="range" class="knob" id="compMidRatio" data-label="Ratio" data-suffix=":1" min="1" max="10" value="2.5" step="0.1">
+                            <input type="range" class="knob" id="compMidAttack" data-label="Attack" data-suffix="ms" min="1" max="50" value="8" step="1">
+                            <input type="range" class="knob" id="compMidRelease" data-label="Release" data-suffix="ms" min="10" max="500" value="60" step="1">
+                        </div>
+                        <div class="comp-strip">
+                            <div class="strip-name">HIGH <small>3k&ndash;20kHz</small></div>
+                            <div class="band-meter" id="meterHigh"><i></i></div>
+                            <div class="band-gr">GR <span id="meterHighGr">&mdash;</span></div>
+                            <input type="range" class="knob" id="compHighThresh" data-label="Thresh" data-suffix="dB" min="-40" max="0" value="-22" step="0.5">
+                            <input type="range" class="knob" id="compHighRatio" data-label="Ratio" data-suffix=":1" min="1" max="10" value="2" step="0.1">
+                            <input type="range" class="knob" id="compHighAttack" data-label="Attack" data-suffix="ms" min="1" max="50" value="5" step="1">
+                            <input type="range" class="knob" id="compHighRelease" data-label="Release" data-suffix="ms" min="10" max="500" value="40" step="1">
+                        </div>
+                    </div>
+                    <div class="section-label">Image &amp; Transients</div>
+                    <div class="knob-row">
+                        <input type="range" class="knob" id="mixMidGain" data-label="Mid" data-suffix="dB" min="-6" max="6" value="0" step="0.5">
+                        <input type="range" class="knob" id="mixSideGain" data-label="Side" data-suffix="dB" min="-6" max="6" value="0" step="0.5">
+                        <input type="range" class="knob" id="mixAttack" data-label="Attack" data-suffix="dB" min="-6" max="6" value="0" step="0.5">
+                        <input type="range" class="knob" id="mixSustain" data-label="Sustain" data-suffix="dB" min="-6" max="6" value="0" step="0.5">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-grid">
+        <div class="panel-left">
+            <div class="card upload-card">
+                <div class="card-header"><h3>Upload Audio</h3></div>
+                <div class="card-body">
+                    <div class="drop-zone" id="masterDropZone">
+                        <div class="drop-icon">&#9733;</div>
+                        <p>Drag &amp; drop audio file here</p>
+                        <input type="file" id="masterFileInput" accept=".mp3,.wav,.flac,.ogg,.aiff,.m4a" hidden>
+                    </div>
+                    <div class="file-info" id="masterFileInfo" style="display:none">
+                        <span class="file-name" id="masterFileName"></span>
+                        <span class="file-size" id="masterFileSize"></span>
+                        <button class="btn btn-sm btn-danger" id="btnMasterRemoveFile">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card preset-card">
+                <div class="card-header"><h3>Mastering Settings</h3></div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <label>Genre Preset</label>
+                        <select id="masterGenre">
+                            <option value="pop">Pop</option>
+                            <option value="rock">Rock</option>
+                            <option value="edm">EDM</option>
+                            <option value="hiphop">Hip-Hop</option>
+                            <option value="jazz">Jazz</option>
+                            <option value="classical">Classical</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Platform Target</label>
+                        <select id="masterPlatform">
+                            <option value="spotify">Spotify (-14 LUFS)</option>
+                            <option value="apple">Apple Music (-16 LUFS)</option>
+                            <option value="youtube">YouTube (-14 LUFS)</option>
+                            <option value="tiktok">TikTok (-14 LUFS)</option>
+                            <option value="soundcloud">SoundCloud (-10 LUFS)</option>
+                            <option value="club">Club (-8 LUFS)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Brickwall Limit</label>
+                        <select id="masterTruePeak">
+                            <option value="-1.0">-1.0 dBTP</option>
+                            <option value="-0.3" selected>-0.3 dBTP</option>
+                            <option value="-0.2">-0.2 dBTP</option>
+                            <option value="-0.1">-0.1 dBTP</option>
+                            <option value="0.0">0 dBTP</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Sample Rate</label>
+                        <select id="masterSampleRate">
+                            <option value="44100" selected>44.1 kHz</option>
+                            <option value="48000">48 kHz</option>
+                            <option value="88200">88.2 kHz</option>
+                            <option value="96000">96 kHz</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Bit Depth</label>
+                        <select id="masterBitDepth">
+                            <option value="24" selected>24-bit</option>
+                            <option value="16">16-bit (dithered)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Adaptive Analysis</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="masterAdaptive" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <label>Watermark Removal</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="masterRemoveWm">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="knob-row knob-row-center">
+                        <input type="range" class="knob knob-lg" id="masterStereoWidth" data-label="Stereo Width" data-suffix="%" min="90" max="130" value="110" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card analyzer-card" id="masterAnalyzerCard" style="display:none">
+                <div class="card-header"><h3>Source Analyzer <span class="live-dot" id="analyzerLive"></span></h3></div>
+                <div class="card-body">
+                    <div class="analyzer-stack">
+                        <div class="analyzer-block">
+                            <div class="section-label">Tonal Balance</div>
+                            <canvas id="tonalBalance" width="300" height="170"></canvas>
+                        </div>
+                        <div class="analyzer-block">
+                            <div class="section-label">Spectrum</div>
+                            <canvas id="spectrumAnalyzer" width="300" height="170"></canvas>
+                        </div>
+                    </div>
+                    <div class="analyzer-metrics" id="analyzerMetrics"></div>
+                    <div class="analyzer-issues" id="analyzerIssues"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="card chain-card">
+                <div class="card-header"><h3>Mastering Chain</h3></div>
+                <div class="card-body">
+                    <div class="chain-step completed" data-chain="eq">
+                        <span class="chain-icon">&#9839;</span>
+                        <span class="chain-label">Genre EQ</span>
+                        <span class="chain-status" id="chainEqVal">Auto</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="comp">
+                        <span class="chain-icon">&#8722;</span>
+                        <span class="chain-label">Multiband Comp</span>
+                        <span class="chain-status" id="chainCompVal">Auto</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="transient">
+                        <span class="chain-icon">&#9651;</span>
+                        <span class="chain-label">Transient Shape</span>
+                        <span class="chain-status">On</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="bassmono">
+                        <span class="chain-icon">&#9689;</span>
+                        <span class="chain-label">Bass Mono</span>
+                        <span class="chain-status">&lt;120Hz</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="stereo">
+                        <span class="chain-icon">&#8596;</span>
+                        <span class="chain-label">Stereo Enhance</span>
+                        <span class="chain-status" id="chainStereoVal">110%</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="lufs">
+                        <span class="chain-icon">&#9776;</span>
+                        <span class="chain-label">LUFS Normalize</span>
+                        <span class="chain-status" id="chainLufsVal">-14 LUFS</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="limiter">
+                        <span class="chain-icon">&#9612;</span>
+                        <span class="chain-label">Brickwall Limit</span>
+                        <span class="chain-status" id="chainBrickwallVal">-1.0 dBTP</span>
+                    </div>
+                    <div class="chain-step completed" data-chain="dither">
+                        <span class="chain-icon">&#9830;</span>
+                        <span class="chain-label">TPDF Dither</span>
+                        <span class="chain-status" id="chainDitherVal">24-bit</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-accent btn-block" id="btnMaster" disabled>
+                <span class="btn-label">&#9733; Master &amp; Listen</span>
+            </button>
+            <div class="master-hint" id="masterHint">
+                Result plays as <b>OUT (B)</b> &mdash; compare with <b>IN (A)</b>. Not right? Tweak &amp; master again. What you hear = what you download.
+            </div>
+
+            <div class="card progress-card" id="masterProgressCard" style="display:none">
+                <div class="card-header"><h3>Processing</h3></div>
+                <div class="card-body">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar accent" id="masterProgressBar" style="width:0%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="masterProgressPercent">0%</span>
+                        <span id="masterProgressMessage">Waiting...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card result-card" id="masterResultCard" style="display:none">
+                <div class="card-header"><h3>Master Result &mdash; Ready to Download</h3></div>
+                <div class="card-body">
+                    <div class="result-stats" id="masterResultStats"></div>
+                    <div class="result-note">This is the final file. Happy with it? Save. If not, tweak Fine Tuning &amp; master again.</div>
+                    <a class="btn btn-accent btn-block" id="btnMasterDownload" href="#">&#8681; Save Master to Downloads</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

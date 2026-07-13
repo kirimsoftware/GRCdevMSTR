@@ -1,0 +1,10 @@
+{
+  "type": "mastering",
+  "name": "Apple Music Master",
+  "platform": "apple",
+  "target_lufs": -16.0,
+  "true_peak_limit": -1.0,
+  "stereo_width": 108,
+  "bass_mono": true,
+  "genre": "pop"
+}

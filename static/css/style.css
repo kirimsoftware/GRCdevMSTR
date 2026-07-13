@@ -1,0 +1,2605 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg-primary: #050508;
+    --bg-secondary: rgba(15, 15, 25, 0.6);
+    --bg-card: rgba(20, 20, 35, 0.4);
+    --bg-card-hover: rgba(30, 30, 50, 0.6);
+    --bg-input: rgba(10, 10, 20, 0.7);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(0, 240, 255, 0.4);
+    --text-primary: #f0f0f5;
+    --text-secondary: #a0a0c0;
+    --text-muted: #606080;
+    --accent: #00f0ff;
+    --accent-dim: #7000ff;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    --accent-bg: rgba(0, 240, 255, 0.1);
+    --success: #00ffaa;
+    --warning: #ffaa00;
+    --danger: #ff3366;
+    --info: #3388ff;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --radius-xs: 4px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --glow: 0 0 20px rgba(0, 240, 255, 0.4);
+    --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+html, body {
+    height: 100%;
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(112, 0, 255, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.08), transparent 40%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* HEADER */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 28px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(0,240,255,0.4));
+}
+
+.logo h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+
+.logo .accent {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.main-nav {
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+}
+
+.nav-btn.active {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: var(--glow);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.nav-icon {
+    font-size: 14px;
+}
+
+/* MAIN */
+.app-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    perspective: 1000px;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* PANELS */
+.panel-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 32px;
+    max-width: 1500px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* CARDS */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    transition: transform var(--transition), border-color var(--transition);
+}
+
+.card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-header h3::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 18px;
+    background: var(--accent-gradient);
+    border-radius: 3px;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* DROP ZONE */
+.drop-zone {
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition);
+    background: rgba(0,0,0,0.2);
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    box-shadow: inset 0 0 30px rgba(0,240,255,0.1);
+}
+
+.drop-icon {
+    font-size: 48px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 12px rgba(0,240,255,0.3));
+}
+
+.drop-zone p {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.4);
+    border-radius: var(--radius-sm);
+    margin-top: 16px;
+    border: 1px solid var(--border);
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 12px;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+}
+
+/* SETTINGS */
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.setting-row:last-child {
+    border-bottom: none;
+}
+
+.setting-row label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-right: 16px;
+}
+
+.setting-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.1);
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+}
+
+.setting-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 10px var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.setting-row input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.setting-row span {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    font-family: var(--font-mono);
+    min-width: 60px;
+    text-align: right;
+}
+
+.setting-row select, .setting-row input[type="text"] {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    flex: 1;
+    max-width: 220px;
+    transition: border-color var(--transition);
+}
+
+.setting-row select:focus, .setting-row input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,240,255,0.2);
+}
+
+/* TOGGLE */
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    border-radius: 14px;
+    transition: var(--transition);
+    border: 1px solid var(--border);
+}
+
+.toggle-slider:before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.toggle input:checked + .toggle-slider {
+    background: var(--accent-gradient);
+    border-color: transparent;
+}
+
+.toggle input:checked + .toggle-slider:before {
+    background: #fff;
+    transform: translateX(22px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+
+.btn:hover::after {
+    left: 150%;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #050508;
+    box-shadow: 0 4px 15px rgba(0,240,255,0.3);
+}
+
+.btn-primary:hover {
+    background: #4dffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,240,255,0.5);
+}
+
+.btn-primary:disabled {
+    background: var(--bg-input);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.btn-accent {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(112,0,255,0.4);
+}
+
+.btn-accent:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(112,0,255,0.6);
+}
+
+.btn-accent:disabled {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.btn-sm:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.btn-danger {
+    background: rgba(255,51,102,0.1);
+    color: var(--danger);
+    border: 1px solid rgba(255,51,102,0.3);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-danger:hover {
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255,51,102,0.5);
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+    font-size: 16px;
+}
+
+/* PROGRESS */
+.progress-card .card-body {
+    padding: 24px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--accent-gradient);
+    border-radius: 4px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(0,240,255,0.5);
+}
+
+.progress-bar.accent {
+    background: linear-gradient(90deg, #00f0ff, #7000ff, #00f0ff);
+    background-size: 200% 100%;
+    animation: progressPulse 2s linear infinite;
+}
+
+@keyframes progressPulse {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+}
+
+.progress-info span:first-child {
+    color: var(--accent);
+}
+
+.progress-info span:last-child {
+    color: var(--text-secondary);
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    gap: 8px;
+}
+
+.progress-steps .step {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: var(--radius-xs);
+    background: rgba(0,0,0,0.2);
+    transition: all var(--transition);
+}
+
+.progress-steps .step.active {
+    color: #fff;
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 10px rgba(112,0,255,0.3);
+    transform: translateY(-2px);
+}
+
+.progress-steps .step.done {
+    color: var(--success);
+    border: 1px solid rgba(0,255,170,0.3);
+    background: rgba(0,255,170,0.05);
+}
+
+/* EQ GRAPH */
+.eq-graph-container {
+    background: rgba(0,0,0,0.4);
+    border-radius: var(--radius-sm);
+    padding: 1px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.eq-graph-container canvas {
+    width: 100%;
+    height: 120px;
+    display: block;
+    border-radius: var(--radius-sm);
+}
+
+.eq-sliders {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.eq-slider-group {
+    text-align: center;
+    background: rgba(255,255,255,0.02);
+    padding: 10px 0;
+    border-radius: var(--radius-xs);
+}
+
+.eq-slider-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.eq-slider-group input[type="range"] {
+    width: 24px;
+    height: 120px;
+}
+
+.eq-slider-group span {
+    display: block;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* COMPRESSOR BANDS */
+.comp-bands {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.comp-band {
+    background: rgba(0,0,0,0.2);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: border-color var(--transition);
+}
+
+.comp-band:hover {
+    border-color: rgba(0,240,255,0.2);
+}
+
+.comp-band > label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comp-band > label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+
+.comp-band > label small {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.comp-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.comp-param label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.comp-param input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.1);
+    height: 4px;
+    border-radius: 2px;
+}
+
+.comp-param input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+}
+
+.comp-param span {
+    display: block;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    text-align: center;
+    margin-top: 6px;
+}
+
+/* MASTERING CHAIN */
+.chain-card .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chain-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: all var(--transition);
+}
+
+.chain-step.completed {
+    border-color: rgba(255,255,255,0.1);
+}
+
+.chain-step.active {
+    border-color: var(--accent);
+    background: rgba(0,240,255,0.05);
+    box-shadow: 0 4px 15px rgba(0,240,255,0.1);
+}
+
+.chain-step.done {
+    border-color: var(--success);
+    background: rgba(0,255,170,0.05);
+}
+
+.chain-icon {
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.chain-step.active .chain-icon {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0,240,255,0.5);
+}
+
+.chain-step.done .chain-icon {
+    background: var(--success);
+    color: #000;
+}
+
+.chain-label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chain-status {
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    background: var(--accent-gradient);
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(112,0,255,0.4);
+}
+
+/* RESULT STATS */
+.result-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.result-stat {
+    flex: 1;
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.2) 100%);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.result-stat .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.result-stat .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 6px;
+}
+
+/* CANVAS */
+.canvas-container {
+    background: rgba(0,0,0,0.5);
+    border-radius: var(--radius-sm);
+    padding: 1px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.canvas-container canvas {
+    width: 100%;
+    height: 140px;
+    display: block;
+    border-radius: var(--radius-sm);
+}
+
+/* STATS GRID */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.stat-item {
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-item .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-item .stat-val {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    margin-top: 4px;
+}
+
+/* PLAYER BAR */
+.player-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 0 32px;
+    background: rgba(5, 5, 10, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+    min-height: 80px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+.player-info {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.player-info span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.player-controls {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.player-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.05);
+}
+
+.player-btn.active {
+    background: var(--accent-gradient);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(0,240,255,0.4);
+}
+
+.player-waveform {
+    flex: 1;
+    height: 48px;
+    position: relative;
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.player-waveform canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.player-time {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.player-volume {
+    display: flex;
+    align-items: center;
+}
+
+.player-volume input[type="range"] {
+    width: 100px;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.2);
+    height: 4px;
+    border-radius: 2px;
+}
+
+.player-volume input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+}
+
+/* GLOBAL OVERLAY */
+.global-upload-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(5, 5, 10, 0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.global-upload-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.upload-area-global {
+    text-align: center;
+    padding: 80px 100px;
+    border: 3px dashed var(--accent);
+    border-radius: 30px;
+    background: rgba(20, 20, 30, 0.6);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.upload-area-global .upload-icon {
+    font-size: 80px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 10px 20px rgba(0,240,255,0.4));
+}
+
+.upload-area-global h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.upload-area-global p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* NOTIFICATION */
+.notification {
+    position: fixed;
+    bottom: 100px;
+    right: 32px;
+    padding: 16px 24px;
+    background: rgba(15, 15, 25, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.error {
+    border-left: 4px solid var(--danger);
+}
+
+.notification.success {
+    border-left: 4px solid var(--success);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .panel-grid {
+        grid-template-columns: 1fr;
+    }
+    .app-header {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+    .main-nav {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* === Custom background (GRCmasteringStudio) ===
+   Taruh foto Anda di: static/img/background.jpg
+   Atur kegelapan overlay lewat --bg-overlay:
+   0.85 = foto samar (teks sangat terbaca), 0.6 = foto lebih terlihat */
+:root {
+    --bg-overlay: 0.82;
+}
+body {
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+/* Logo custom di header: taruh file di static/img/logo.png */
+.logo img.logo-img {
+    height: 40px;
+    width: auto;
+    border-radius: 8px;
+}
+
+/* ===== Custom background photo (dinonaktifkan — tema futuristik pakai gradient) ===== */
+:root {
+    --bg-photo-opacity: 0;
+}
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   GRC BRAND THEME — "Mastering Console"
+   Palet diambil dari identitas G.R.C sendiri:
+   navy dari logo, emas champagne dari pencahayaan studio,
+   display serif menggemakan huruf M pada logo.
+   Ditempatkan di akhir file agar meng-override tema default.
+   ============================================================ */
+:root {
+    /* Palet */
+    --bg-primary: #0b0e17;                     /* navy-hitam pekat */
+    --bg-secondary: rgba(17, 22, 38, 0.72);
+    --bg-card: rgba(19, 25, 43, 0.55);
+    --bg-card-hover: rgba(26, 34, 58, 0.7);
+    --bg-input: rgba(10, 13, 24, 0.8);
+    --border: rgba(216, 180, 90, 0.12);        /* garis emas samar */
+    --border-accent: rgba(216, 180, 90, 0.45);
+    --text-primary: #ece7db;                   /* putih hangat */
+    --text-secondary: #9aa3bd;
+    --text-muted: #5c6580;
+    --accent: #d8b45a;                          /* emas champagne */
+    --accent-dim: #24408e;                      /* royal blue logo */
+    --accent-gradient: linear-gradient(160deg, #e6c877, #b98f3a);
+    --accent-bg: rgba(216, 180, 90, 0.10);
+    --glow: 0 0 14px rgba(216, 180, 90, 0.25);
+    /* Tipografi: serif display (gema logo) + sans utilitas */
+    --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --radius: 10px;
+    --radius-sm: 7px;
+}
+
+/* Header: wordmark serif + mark logo asli */
+.logo-mark {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.5);
+}
+.logo h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.logo .accent {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* Judul kartu ikut display serif, marker gradien diganti garis emas tipis */
+.card-header h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+    text-transform: none;
+}
+.card-header h3::before {
+    background: var(--accent);
+    width: 3px;
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+/* Navigasi: gaya tombol konsol — tenang saat idle, LED emas saat aktif */
+.nav-btn { border: 1px solid transparent; }
+.nav-btn.active {
+    background: rgba(216, 180, 90, 0.12);
+    border-color: var(--border-accent);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(216,180,90,.15);
+}
+
+/* Tombol aksi utama: solid, tegas, tanpa gradasi neon */
+.btn-accent {
+    background: var(--accent-gradient);
+    color: #17120a;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: none;
+    box-shadow: 0 2px 12px rgba(216,180,90,.25);
+}
+.btn-accent:hover { filter: brightness(1.06); box-shadow: 0 3px 16px rgba(216,180,90,.35); }
+
+/* Kartu: bidang tenang, sudut lebih tegas, tanpa glow berlebih */
+.card { box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.card:hover { box-shadow: 0 12px 34px rgba(0,0,0,.5); }
+
+/* Latar foto studio sedikit lebih hangat & jelas */
+:root { --bg-photo-opacity: 0.22; }
+body::before { filter: saturate(0.9) brightness(0.9); }
+
+/* Player bar: panel konsol dengan garis emas atas */
+.player-bar {
+    border-top: 1px solid var(--border-accent);
+    background: rgba(11, 14, 23, 0.92);
+}
+
+/* ============================================================
+   ANALOG CONSOLE — knob rotary, fader EQ, panel rack
+   ============================================================ */
+
+/* Knob */
+.knob-ctl {
+    display: inline-flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 6px 4px; user-select: none; min-width: 62px;
+}
+.knob-ctl input[type="range"].knob { display: none; }
+.knob-dial { position: relative; width: 46px; height: 46px; cursor: ns-resize; }
+.knob-ctl-lg .knob-dial { width: 68px; height: 68px; }
+.knob-ticks { position: absolute; inset: 0; }
+.knob-ticks i {
+    position: absolute; left: 50%; top: 50%;
+    width: 1.5px; height: 50%;
+    transform-origin: top center;
+    background: linear-gradient(to bottom, transparent 78%, rgba(216,180,90,.5) 78%);
+}
+.knob-cap {
+    position: absolute; inset: 5px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 28%, #3a4157, #191e2e 62%, #0c0f19);
+    border: 1px solid rgba(216,180,90,.28);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,.10),
+                inset 0 -3px 6px rgba(0,0,0,.65),
+                0 3px 8px rgba(0,0,0,.55);
+    transition: box-shadow .15s;
+}
+.knob-ctl.active .knob-cap,
+.knob-dial:hover .knob-cap { box-shadow: inset 0 1px 2px rgba(255,255,255,.12), inset 0 -3px 6px rgba(0,0,0,.65), 0 0 12px rgba(216,180,90,.35); }
+.knob-pointer {
+    position: absolute; left: 50%; top: 8%;
+    width: 2.5px; height: 34%;
+    margin-left: -1.25px; border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 5px rgba(216,180,90,.8);
+}
+.knob-value {
+    font-family: 'JetBrains Mono', Menlo, Consolas, monospace;
+    font-size: 10.5px; color: var(--accent); letter-spacing: .02em;
+}
+.knob-label {
+    font-size: 9.5px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .08em;
+}
+.knob-row { display: flex; flex-wrap: wrap; gap: 4px; justify-content: space-around; }
+.knob-row-center { justify-content: center; margin-top: 10px; }
+
+/* Pre-Master console */
+.premaster-card {
+    margin-bottom: 18px;
+    background:
+        linear-gradient(180deg, rgba(30,36,58,.5), rgba(14,18,32,.6)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+    border: 1px solid var(--border-accent);
+}
+.premaster-body { transition: opacity .2s, filter .2s; }
+.premaster-body.disabled { opacity: .38; filter: grayscale(.6); pointer-events: none; }
+.premaster-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; }
+@media (max-width: 980px) { .premaster-grid { grid-template-columns: 1fr; } }
+.section-label {
+    font-family: var(--font-display);
+    font-size: 13px; color: var(--accent); letter-spacing: .05em;
+    margin: 6px 0 8px; display: flex; align-items: center; gap: 8px;
+}
+.comp-console { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.comp-strip {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px 4px 4px;
+    background: rgba(9, 12, 22, .55);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.strip-name {
+    font-size: 10px; letter-spacing: .12em; color: var(--text-primary);
+    margin-bottom: 2px;
+}
+.strip-name small { color: var(--text-muted); letter-spacing: .02em; }
+.comp-strip .knob-ctl { min-width: 56px; padding: 3px 2px; }
+.comp-strip .knob-dial { width: 38px; height: 38px; }
+
+/* EQ fader ala console (vertikal) */
+.eq-sliders { display: flex; gap: 2px; justify-content: space-between; margin-top: 8px; }
+.eq-slider-group { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.eq-slider-group input[type="range"] {
+    writing-mode: vertical-lr; direction: rtl;
+    width: 26px; height: 110px;
+    appearance: none;
+    background: transparent;
+}
+.eq-slider-group input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to bottom, rgba(216,180,90,.35), rgba(216,180,90,.08));
+    width: 3px; border-radius: 2px;
+}
+.eq-slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 10px; border-radius: 2px;
+    background: linear-gradient(180deg, #4a5168, #171c2b);
+    border: 1px solid rgba(216,180,90,.5);
+    box-shadow: 0 2px 5px rgba(0,0,0,.6);
+    cursor: ns-resize;
+}
+.eq-slider-group label { font-size: 9px; color: var(--text-secondary); margin-bottom: 3px; }
+.eq-slider-group span { font-size: 9px; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+
+.toggle-labeled { display: inline-flex; align-items: center; gap: 8px; }
+.toggle-text { font-size: 11px; color: var(--text-secondary); letter-spacing: .06em; text-transform: uppercase; }
+
+/* ============================================================
+   KNOB v2 — referensi hardware MasterSuite:
+   cap baja brushed, bezel gelap, arc emas mengisi sesuai nilai
+   ============================================================ */
+.knob-dial {
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 42%, #20242f, #0d1018 68%);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.05);
+}
+/* arc indikator: mengisi dari kiri-bawah mengikuti --pct */
+.knob-dial::before {
+    content: '';
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from -135deg,
+        var(--accent) calc(var(--pct, .5) * 270deg),
+        rgba(255,255,255,.07) calc(var(--pct, .5) * 270deg) 270deg,
+        transparent 270deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+    filter: drop-shadow(0 0 4px rgba(216,180,90,.45));
+    pointer-events: none;
+}
+.knob-ticks i {
+    background: linear-gradient(to bottom, transparent 82%, rgba(255,255,255,.28) 82%);
+}
+/* cap baja brushed dengan bevel */
+.knob-cap {
+    inset: 7px;
+    background:
+        radial-gradient(circle at 50% 30%, rgba(255,255,255,.28), transparent 45%),
+        conic-gradient(#c8ccd4, #8f95a1, #d6d9df, #7e8592, #c2c6ce, #878e9b, #c8ccd4);
+    border: 2px solid #14171f;
+    box-shadow:
+        inset 0 2px 3px rgba(255,255,255,.5),
+        inset 0 -4px 7px rgba(0,0,0,.45),
+        0 4px 9px rgba(0,0,0,.6);
+}
+.knob-pointer {
+    top: 4%; height: 30%;
+    width: 3px; margin-left: -1.5px;
+    background: #e8963e;
+    box-shadow: 0 0 5px rgba(232,150,62,.9);
+}
+.knob-ctl-lg .knob-cap { inset: 9px; }
+.knob-value { font-weight: 700; color: var(--text-primary); font-size: 11.5px; }
+.knob-label { order: 1; }
+.knob-value { order: 2; }
+
+/* ============================================================
+   WARM ORANGE — mengikuti aksen referensi hardware
+   (menimpa emas champagne sebelumnya)
+   ============================================================ */
+:root {
+    --accent: #e8792e;                             /* warm orange */
+    --accent-dim: #24408e;
+    --accent-gradient: linear-gradient(160deg, #f2924a, #cf5f1d);
+    --accent-bg: rgba(232, 121, 46, 0.10);
+    --border: rgba(232, 121, 46, 0.12);
+    --border-accent: rgba(232, 121, 46, 0.45);
+    --glow: 0 0 14px rgba(232, 121, 46, 0.28);
+}
+.btn-accent { box-shadow: 0 2px 12px rgba(232,121,46,.25); color: #1b0f06; }
+.btn-accent:hover { box-shadow: 0 3px 16px rgba(232,121,46,.35); }
+.knob-dial::before { filter: drop-shadow(0 0 4px rgba(232,121,46,.5)); }
+.knob-pointer { background: #f2924a; box-shadow: 0 0 5px rgba(242,146,74,.9); }
+.player-bar { border-top-color: var(--border-accent); }
+
+/* ============================================================
+   LIVE PREVIEW — spectrum overlay, band meter, output meter
+   ============================================================ */
+.eq-graph-container { position: relative; }
+#eqSpectrum {
+    position: absolute; inset: 0;
+    pointer-events: none;           /* klik tembus ke kurva EQ */
+    z-index: 0;
+}
+#eqCanvas { position: relative; z-index: 1; }
+
+.btn-preview { border: 1px solid var(--border-accent); color: var(--accent); }
+.btn-preview.active {
+    background: var(--accent-gradient); color: #1b0f06;
+    box-shadow: 0 0 12px rgba(232,121,46,.5);
+}
+.preview-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Output meter LED horizontal (header Pre-Master) */
+.out-meter {
+    width: 110px; height: 10px;
+    border-radius: 3px;
+    background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 4px, transparent 4px 6px),
+        rgba(6, 9, 16, .9);
+    border: 1px solid rgba(255,255,255,.08);
+    overflow: hidden; position: relative;
+}
+.out-meter i {
+    position: absolute; inset: 0;
+    transform-origin: left center;
+    transform: scaleX(var(--lvl, 0));
+    background:
+        repeating-linear-gradient(90deg, transparent 0 4px, rgba(0,0,0,.35) 4px 6px),
+        linear-gradient(90deg, #4caf50 0 55%, #e8b23c 55% 80%, #e8462e 80% 100%);
+    transition: transform .06s linear;
+}
+.out-meter-db {
+    font-family: 'JetBrains Mono', Menlo, monospace;
+    font-size: 10.5px; color: var(--text-secondary); min-width: 58px;
+}
+
+/* Meter level vertikal per band kompresor + label GR */
+.band-meter {
+    width: 8px; height: 54px;
+    margin: 4px 0 2px;
+    border-radius: 2px;
+    background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 3px, transparent 3px 5px),
+        rgba(6, 9, 16, .9);
+    border: 1px solid rgba(255,255,255,.08);
+    overflow: hidden; position: relative;
+}
+.band-meter i {
+    position: absolute; inset: 0;
+    transform-origin: bottom center;
+    transform: scaleY(var(--lvl, 0));
+    background:
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.35) 3px 5px),
+        linear-gradient(0deg, #4caf50 0 60%, #e8b23c 60% 85%, #e8462e 85% 100%);
+    transition: transform .06s linear;
+}
+.band-gr {
+    font-size: 9px; color: var(--text-muted); margin-bottom: 4px;
+    font-family: 'JetBrains Mono', Menlo, monospace;
+}
+.band-gr span { color: var(--accent); }
+
+/* ============================================================
+   RED LED — karakter warna hardware mastering
+   (menimpa warm orange sebelumnya)
+   ============================================================ */
+:root {
+    --accent: #e0352b;                              /* LED red */
+    --accent-gradient: linear-gradient(160deg, #f0523f, #b31f16);
+    --accent-bg: rgba(224, 53, 43, 0.10);
+    --border: rgba(224, 53, 43, 0.13);
+    --border-accent: rgba(224, 53, 43, 0.5);
+    --glow: 0 0 14px rgba(224, 53, 43, 0.3);
+}
+.btn-accent { box-shadow: 0 2px 12px rgba(224,53,43,.3); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.btn-accent:hover { box-shadow: 0 3px 18px rgba(224,53,43,.45); }
+.knob-dial::before { filter: drop-shadow(0 0 4px rgba(224,53,43,.55)); }
+.knob-pointer { background: #ff5040; box-shadow: 0 0 6px rgba(255,80,64,.95); }
+.btn-preview { border-color: var(--border-accent); color: var(--accent); }
+.btn-preview.active { background: var(--accent-gradient); color: #fff; box-shadow: 0 0 14px rgba(224,53,43,.55); }
+
+/* ============================================================
+   BODY BESI HITAM KASAR — tekstur panel hardware
+   Diterapkan ke seluruh kartu (EQ, Multiband, Upload, Settings,
+   Chain, Result) + tombol Render Master
+   ============================================================ */
+.card {
+    background:
+        /* noise besi kasar */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.06 0 0 0 0 0.065 0 0 0 0 0.075 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+        /* sheen vertikal panel */
+        linear-gradient(180deg, rgba(48,53,66,.55) 0%, rgba(18,21,30,.75) 8%, rgba(12,14,22,.85) 92%, rgba(5,6,10,.95) 100%);
+    background-blend-mode: overlay, normal;
+    border: 1px solid rgba(0,0,0,.65);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.07),      /* bevel atas */
+        inset 0 -1px 0 rgba(0,0,0,.7),
+        inset 1px 0 0 rgba(255,255,255,.02),
+        0 10px 26px rgba(0,0,0,.55);
+    border-radius: 8px;
+}
+.card-header {
+    background: linear-gradient(180deg, rgba(255,255,255,.045), transparent);
+    border-bottom: 1px solid rgba(0,0,0,.55);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04);
+}
+/* sekrup panel di sudut kartu (DINONAKTIFKAN - diganti versi final) */
+.card { position: relative; }
+.card--oldscrew::before, .card--oldscrew::after {
+    content: '';
+    position: absolute; top: 7px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #565d6e, #1a1e28 65%);
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,.8), 0 1px 1px rgba(255,255,255,.06);
+    pointer-events: none;
+}
+.card::before { left: 8px; }
+.card::after { right: 8px; }
+
+/* Tombol Render Master: plat merah bertekstur */
+.btn-accent.btn-block {
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #f0523f, #a81c13);
+    border: 1px solid #6d120c;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.25),
+        inset 0 -2px 4px rgba(0,0,0,.4),
+        0 3px 14px rgba(224,53,43,.35);
+}
+
+/* Monitor IN/OUT/REF + label referensi */
+.monitor-group { display: inline-flex; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; overflow: hidden; }
+.mon-btn {
+    border: none; border-radius: 0; padding: 4px 10px;
+    background: rgba(8, 10, 16, .8); color: var(--text-secondary);
+    letter-spacing: .08em; font-size: 10px;
+}
+.mon-btn + .mon-btn { border-left: 1px solid rgba(255,255,255,.1); }
+.mon-btn.active {
+    background: var(--accent-gradient); color: #fff;
+    box-shadow: inset 0 0 8px rgba(0,0,0,.35), 0 0 10px rgba(224,53,43,.5);
+}
+.mon-btn[disabled] { opacity: .35; cursor: not-allowed; }
+.ref-name {
+    max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 10px; color: var(--text-muted);
+}
+
+/* ============================================================
+   LED GLOW RED — seperti display LED hardware (foto referensi):
+   merah menyala dengan bloom/cahaya, bukan merah datar
+   ============================================================ */
+:root {
+    --accent: #ff2038;
+    --accent-gradient: linear-gradient(160deg, #ff4d5e, #d1101f);
+    --accent-bg: rgba(255, 32, 56, 0.10);
+    --border: rgba(255, 32, 56, 0.14);
+    --border-accent: rgba(255, 32, 56, 0.55);
+    --glow: 0 0 16px rgba(255, 32, 56, 0.45);
+    --led-glow: 0 0 5px rgba(255, 32, 56, .95), 0 0 12px rgba(255, 32, 56, .55), 0 0 26px rgba(255, 32, 56, .28);
+}
+/* Semua pembacaan angka = digit LED menyala */
+.knob-value,
+.out-meter-db,
+.band-gr span,
+.chain-status,
+.eq-slider-group span {
+    color: #ff3c50;
+    text-shadow: var(--led-glow);
+}
+.knob-pointer {
+    background: #ff3c50;
+    box-shadow: 0 0 4px rgba(255,60,80,1), 0 0 10px rgba(255,32,56,.8), 0 0 20px rgba(255,32,56,.4);
+}
+.knob-dial::before {
+    filter: drop-shadow(0 0 3px rgba(255,32,56,.9)) drop-shadow(0 0 8px rgba(255,32,56,.45));
+}
+.mon-btn.active {
+    background: var(--accent-gradient); color: #fff;
+    box-shadow: inset 0 0 8px rgba(0,0,0,.35), 0 0 8px rgba(255,32,56,.8), 0 0 18px rgba(255,32,56,.4);
+    text-shadow: 0 0 6px rgba(255,255,255,.8);
+}
+.btn-preview.active {
+    box-shadow: 0 0 10px rgba(255,32,56,.8), 0 0 22px rgba(255,32,56,.4);
+}
+.logo .accent { text-shadow: 0 0 10px rgba(255,32,56,.5); }
+.nav-btn.active { color: #ff3c50; text-shadow: 0 0 8px rgba(255,32,56,.6); border-color: var(--border-accent); background: var(--accent-bg); }
+.card-header h3::before { background: #ff3c50; box-shadow: var(--led-glow); }
+
+/* ============================================================
+   PLAT BESI v2 — lebih terang & bertekstur nyata:
+   brushed diagonal + noise kasar terlihat, bevel tegas
+   ============================================================ */
+.card {
+    background:
+        /* noise besi kasar - lebih terang */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.32 0 0 0 0 0.34 0 0 0 0 0.39 0 0 0 0.30 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+        /* garis brushed diagonal */
+        repeating-linear-gradient(100deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
+        /* plat dengan sheen jelas */
+        linear-gradient(180deg, #3d434f 0%, #262b36 12%, #1e222c 55%, #171a23 88%, #10121a 100%);
+    background-blend-mode: overlay, normal, normal;
+    border: 1px solid #000;
+    box-shadow:
+        inset 0 1.5px 0 rgba(255,255,255,.14),
+        inset 0 -2px 0 rgba(0,0,0,.8),
+        inset 1px 0 0 rgba(255,255,255,.05),
+        inset -1px 0 0 rgba(0,0,0,.5),
+        0 12px 28px rgba(0,0,0,.6);
+}
+.card:hover { box-shadow:
+        inset 0 1.5px 0 rgba(255,255,255,.16),
+        inset 0 -2px 0 rgba(0,0,0,.8),
+        0 14px 32px rgba(0,0,0,.65); }
+.card-header {
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.015) 70%, transparent);
+    border-bottom: 1px solid rgba(0,0,0,.7);
+    box-shadow: 0 1px 0 rgba(255,255,255,.07);
+}
+/* sekrup lebih jelas (DINONAKTIFKAN) */
+.card--oldscrew2::before, .card--oldscrew2::after {
+    width: 9px; height: 9px;
+    background:
+        radial-gradient(circle at 35% 28%, #8a92a4, #3a404e 55%, #14171f);
+    box-shadow: inset 0 -1.5px 2px rgba(0,0,0,.9), inset 0 1px 1px rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.6);
+}
+/* strip kompresor & panel dalam ikut plat gelap agar kontras */
+.comp-strip, .eq-graph-container {
+    background: rgba(6, 8, 13, .72);
+    border: 1px solid rgba(0,0,0,.7);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.05);
+    border-radius: 6px;
+}
+
+/* ============================================================
+   LED TUNE — pendaran dikurangi + badge jadi "jendela LED":
+   latar hitam pekat, digit merah menyala (seperti foto referensi)
+   ============================================================ */
+:root {
+    /* glow lebih halus: inti tajam + halo tipis saja */
+    --led-glow: 0 0 3px rgba(255, 32, 56, .75), 0 0 8px rgba(255, 32, 56, .3);
+}
+.knob-value,
+.out-meter-db,
+.band-gr span,
+.eq-slider-group span {
+    text-shadow: var(--led-glow);
+}
+.knob-pointer {
+    box-shadow: 0 0 3px rgba(255,60,80,.9), 0 0 7px rgba(255,32,56,.45);
+}
+.knob-dial::before {
+    filter: drop-shadow(0 0 2px rgba(255,32,56,.75)) drop-shadow(0 0 5px rgba(255,32,56,.3));
+}
+.mon-btn.active {
+    box-shadow: inset 0 0 8px rgba(0,0,0,.35), 0 0 6px rgba(255,32,56,.55);
+    text-shadow: 0 0 4px rgba(255,255,255,.6);
+}
+.btn-preview.active { box-shadow: 0 0 8px rgba(255,32,56,.55); }
+.logo .accent { text-shadow: 0 0 7px rgba(255,32,56,.35); }
+.nav-btn.active { text-shadow: 0 0 5px rgba(255,32,56,.4); }
+.card-header h3::before { box-shadow: 0 0 4px rgba(255,32,56,.6); }
+
+/* Badge chain & status = jendela display LED:
+   hitam pekat + digit merah, BUKAN pill merah */
+.chain-status {
+    background: #0a0508 !important;
+    color: #ff4053 !important;
+    border: 1px solid rgba(255, 32, 56, 0.22);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'JetBrains Mono', Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    letter-spacing: .04em;
+    text-shadow: 0 0 3px rgba(255,32,56,.7), 0 0 7px rgba(255,32,56,.25);
+    box-shadow:
+        inset 0 1px 4px rgba(0,0,0,.9),        /* jendela tenggelam */
+        inset 0 0 12px rgba(255,32,56,.06),
+        0 1px 0 rgba(255,255,255,.05);
+}
+
+/* Nilai fader EQ ikut gaya jendela LED kecil */
+.eq-slider-group span {
+    background: #0a0508;
+    border: 1px solid rgba(255,32,56,.18);
+    border-radius: 3px;
+    padding: 1px 5px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.85);
+}
+
+/* Tombol Render Master & tombol aksen: teks putih tegas, selalu terbaca */
+.btn-accent, .btn-accent.btn-block, a.btn-accent {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,.65) !important;
+    font-weight: 700;
+}
+
+/* ==== LED FINAL: bercahaya tapi tajam, tanpa bayangan di huruf ==== */
+:root { --led-glow: 0 0 2px rgba(255, 32, 56, .55); }
+.knob-value, .out-meter-db, .band-gr span, .eq-slider-group span,
+.chain-status { text-shadow: 0 0 2px rgba(255,32,56,.5) !important; }
+.knob-pointer { box-shadow: 0 0 2px rgba(255,60,80,.8), 0 0 5px rgba(255,32,56,.3); }
+.knob-dial::before { filter: drop-shadow(0 0 2px rgba(255,32,56,.55)); }
+
+/* ==== PROCESSING: animasi indeterminate saat masih 0% ==== */
+.progress-bar-container.indeterminate { overflow: hidden; position: relative; }
+.progress-bar-container.indeterminate .progress-bar {
+    width: 32% !important;
+    animation: grc-slide 1.1s ease-in-out infinite;
+    background: linear-gradient(90deg, transparent, #ff2038 45%, #ff6b78 50%, #ff2038 55%, transparent);
+    box-shadow: 0 0 10px rgba(255,32,56,.5);
+}
+@keyframes grc-slide {
+    0%   { margin-left: -32%; }
+    100% { margin-left: 100%; }
+}
+
+/* ==== METER PLAYBACK (player bar): LUFS / RMS / peak ==== */
+.pb-meters { display: flex; align-items: center; gap: 10px; margin-left: 14px; }
+.led-win {
+    background: #0a0508; border: 1px solid rgba(255,32,56,.2);
+    border-radius: 4px; padding: 2px 8px;
+    font-family: 'JetBrains Mono', Menlo, monospace; font-size: 10px;
+    color: var(--text-muted); letter-spacing: .05em;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.85);
+}
+.led-win span { color: #ff4053; text-shadow: 0 0 2px rgba(255,32,56,.5); }
+.pb-peak { width: 90px; }
+
+/* ==== LICENSE OVERLAY ==== */
+.license-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(4, 5, 9, .96);
+    display: flex; align-items: center; justify-content: center;
+}
+.license-card { max-width: 460px; width: 92%; padding: 26px; }
+.license-card h2 { font-family: var(--font-display); color: var(--text-primary); margin-bottom: 6px; }
+.license-card p { color: var(--text-secondary); font-size: 13px; margin-bottom: 14px; }
+.hwid-box {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.hwid-box .led-win { flex: 1; font-size: 13px; padding: 8px 10px; text-align: center; }
+.license-card textarea {
+    width: 100%; min-height: 84px; resize: vertical;
+    background: #0a0d15; color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; font-family: 'JetBrains Mono', Menlo, monospace; font-size: 11px;
+    margin-bottom: 12px;
+}
+.license-status { font-size: 12px; margin-top: 10px; min-height: 16px; }
+.license-status.ok { color: #4caf50; }
+.license-status.err { color: #ff4053; }
+
+/* ==== ANALYZER PANEL (bawah kolom Master) ==== */
+.analyzer-card { margin-top: 14px; }
+.analyzer-tonal { margin-bottom: 12px; }
+#analyzerCurve { width: 100%; height: 120px; background: rgba(6,8,13,.6); border-radius: 6px; border: 1px solid rgba(0,0,0,.6); }
+.analyzer-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.metric { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.metric-k { font-size: 11px; color: var(--text-secondary); }
+.analyzer-issues { display: flex; flex-direction: column; gap: 6px; }
+.issue { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); }
+.issue-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff3c50; box-shadow: 0 0 5px rgba(255,32,56,.7); flex-shrink: 0; }
+.issue-ok { font-size: 12px; color: #4caf50; }
+
+/* ==== PLAYER BAR v2: 2 baris (kontrol atas, waveform bawah presisi) ==== */
+.player-bar {
+    display: block !important;
+    padding: 10px 16px 12px !important;
+}
+.player-top {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 8px;
+}
+.player-top .player-info { min-width: 130px; flex-shrink: 0; }
+.player-top .player-controls { display: flex; gap: 8px; }
+.player-top .pb-meters { margin-left: 6px; }
+.player-top .player-time { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+.player-top .player-volume { width: 90px; flex-shrink: 0; }
+.player-bar .player-waveform {
+    width: 100% !important; height: 46px !important;
+    margin: 0 !important; flex: none !important;
+    background: rgba(6,8,13,.55); border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.5);
+}
+.player-bar .player-waveform canvas { width: 100%; height: 46px; display: block; }
+
+/* ==== ANALYZER DUAL: Tonal Balance | Spectrum bersebelahan ==== */
+.analyzer-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+@media (max-width: 720px) { .analyzer-dual { grid-template-columns: 1fr; } }
+.analyzer-half { min-width: 0; }
+.analyzer-half canvas {
+    width: 100%; height: 150px;
+    background: rgba(6,8,13,.6); border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.6);
+}
+
+/* label genre pada Tonal Balance */
+.tb-genre {
+    font-size: 9px; text-transform: capitalize; color: var(--text-muted);
+    background: rgba(6,8,13,.7); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 3px; padding: 1px 6px; margin-left: 6px; letter-spacing: .02em;
+}
+
+/* ==== ANALYZER relokasi ke kolom kiri, stack vertikal penuh ==== */
+.analyzer-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 12px; }
+.analyzer-block canvas {
+    width: 100%; height: 170px; display: block;
+    background: rgba(6,8,13,.6); border-radius: 6px; border: 1px solid rgba(0,0,0,.6);
+}
+.live-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.15); margin-left: 8px; vertical-align: middle;
+    transition: background .2s, box-shadow .2s;
+}
+.live-dot.on { background: #ff3c50; box-shadow: 0 0 6px rgba(255,32,56,.8); }
+
+/* ==== WAVEFORM v2: lebih tinggi, terisi penuh (referensi) ==== */
+.player-bar .player-waveform { height: 58px !important; }
+.player-bar .player-waveform canvas { height: 58px; }
+
+/* ==== PLAYER BAR height auto (rev15) — waveform full tak terpotong ==== */
+.player-bar {
+    height: auto !important;
+    min-height: auto !important;
+    display: block !important;
+    padding: 10px 24px 14px !important;
+}
+.player-bar .player-top { min-height: 44px; }
+.player-bar .player-waveform {
+    height: 80px !important;
+    overflow: visible !important;
+    margin-top: 8px;
+}
+.player-bar .player-waveform canvas { height: 80px !important; }
+.app-main { padding-bottom: 190px; }
+
+/* ==== ALIGNMENT FINAL (rev17) ====
+   Kolom kiri : [Upload][Settings][Analyzer]
+   Kolom kanan: [Chain][RenderBtn][Processing][Result]
+   Target: bawah Chain sejajar bawah Settings; Render/Processing/Result
+   hanya turun posisinya. Caranya: Chain memanjang mengisi tinggi
+   (Upload+gap+Settings) sehingga baris berikutnya kedua kolom sejajar. */
+.masterer-panel .panel-grid { align-items: start; }
+.masterer-panel .panel-left,
+.masterer-panel .panel-right {
+    display: flex; flex-direction: column; gap: 20px;
+}
+.masterer-panel .card { margin-bottom: 0 !important; }
+.masterer-panel .btn-block { margin: 0 !important; }
+
+/* Chain melar mengisi tinggi kolom kiri sampai bawah Settings.
+   Isi chain tetap di atas (start), sisa ruang jadi padding bawah kartu. */
+.masterer-panel .chain-card {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column;
+    min-height: 0;
+}
+.masterer-panel .chain-card .card-body {
+    flex: 1 1 auto;
+}
+/* Analyzer & Result: ukuran natural, tidak melar */
+.masterer-panel #masterAnalyzerCard,
+.masterer-panel .result-card { flex: 0 0 auto; }
+
+
+
+/* ============================================================
+   ★ CLASSIC FUTURISTIC THEME — Cyan Neon (rev25)
+   Winamp-inspired, disempurnakan. Pure CSS, identik semua engine.
+   ============================================================ */
+:root {
+    --cy: #00e5ff;           /* cyan utama */
+    --cy-bright: #6cf5ff;
+    --cy-dim: #0a7a8a;
+    --cy-deep: #041e26;
+    --mag: #ff2d95;          /* aksen magenta sekunder */
+    --amber: #ffb020;
+    --bg0: #04060a;          /* near black */
+    --bg1: #070b12;
+    --panel: #0a1018;
+    --panel-edge: rgba(0,229,255,.22);
+    --glow-cy: 0 0 8px rgba(0,229,255,.55), 0 0 18px rgba(0,229,255,.25);
+    --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+/* ---------- BODY: latar futuristik dengan grid glow halus ---------- */
+body {
+    background:
+        radial-gradient(120% 90% at 50% -10%, #16303e 0%, #0d1826 55%, #070d16 100%) !important;
+    color: #cfe9f0;
+}
+/* garis grid tipis di latar (efek futuristik) */
+body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+        linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(100% 80% at 50% 0%, #000 40%, transparent 100%);
+}
+.app-container, .app-main, .app-header { position: relative; z-index: 1; }
+
+/* ---------- HEADER ---------- */
+.app-header {
+    background: linear-gradient(180deg, rgba(6,12,20,.95), rgba(4,7,12,.85)) !important;
+    border-bottom: 1px solid var(--panel-edge) !important;
+    box-shadow: 0 2px 20px rgba(0,229,255,.08) !important;
+    backdrop-filter: blur(10px);
+}
+.logo-text, .app-title {
+    font-family: var(--font-sans) !important; font-weight: 800 !important;
+    letter-spacing: .02em;
+    color: #eafcff !important;
+    text-shadow: 0 0 12px rgba(0,229,255,.5);
+}
+.logo-text .accent, .app-title .accent { color: var(--cy) !important; }
+
+/* nav tab */
+.nav-btn, .tab-btn {
+    background: rgba(0,229,255,.04) !important;
+    border: 1px solid rgba(0,229,255,.15) !important;
+    color: #8fb4c0 !important;
+    border-radius: 6px !important;
+    transition: all .2s;
+}
+.nav-btn.active, .tab-btn.active {
+    background: rgba(0,229,255,.12) !important;
+    border-color: var(--cy) !important;
+    color: var(--cy-bright) !important;
+    box-shadow: var(--glow-cy), inset 0 0 12px rgba(0,229,255,.15) !important;
+    text-shadow: 0 0 8px rgba(0,229,255,.6);
+}
+
+/* ---------- PANEL / CARD: dark glass + tepi neon ---------- */
+.card, .tab-panel .card {
+    background:
+        linear-gradient(180deg, rgba(20,32,44,.92), rgba(12,20,30,.94)) !important;
+    border: 1px solid var(--panel-edge) !important;
+    border-radius: 10px !important;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(0,229,255,.08),
+        0 8px 30px rgba(0,0,0,.55),
+        0 0 20px rgba(0,229,255,.05) !important;
+    backdrop-filter: blur(8px);
+    position: relative;
+    overflow: visible;
+}
+/* garis sudut bercahaya (corner accents) di tiap panel */
+.card::before, .card::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    border: 1.5px solid var(--cy);
+    pointer-events: none; opacity: .75;
+    filter: drop-shadow(0 0 3px rgba(0,229,255,.6));
+}
+/* sudut kiri-atas + kanan-atas via ::before (pakai gradient border trick tak bisa,
+   jadi kita pakai 4 elemen: 2 pseudo card + 2 pseudo card-body) */
+.card::before { top: 7px; left: 7px; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
+.card::after  { top: 7px; right: 7px; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
+/* sudut bawah via card-body pseudo */
+.card > .card-body { position: relative; }
+.card > .card-body::before, .card > .card-body::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    border: 1.5px solid var(--cy);
+    pointer-events: none; opacity: .75;
+    filter: drop-shadow(0 0 3px rgba(0,229,255,.6));
+    z-index: 3;
+}
+.card > .card-body::before { bottom: 7px; left: 7px; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
+.card > .card-body::after  { bottom: 7px; right: 7px; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+
+.card-header {
+    background: linear-gradient(180deg, rgba(0,229,255,.08), transparent) !important;
+    border-bottom: 1px solid rgba(0,229,255,.15) !important;
+    padding-left: 16px !important;
+    position: relative;
+}
+.card-header::before {
+    display: none;
+}
+.section-label, .card-title, .panel-title {
+    font-family: var(--font-sans) !important; font-weight: 700 !important;
+    letter-spacing: .08em !important; text-transform: uppercase !important;
+    font-size: 13px !important;
+    color: var(--cy-bright) !important;
+    text-shadow: 0 0 8px rgba(0,229,255,.4) !important;
+}
+
+/* ---------- LCD readout (nilai) ---------- */
+.knob-value, .comp-param-value, .eq-slider-group span, .fader-custom + span,
+.result-stat-value, .out-meter-db, .band-gr span,
+.chain-status, .lufs-val, .rms-val {
+    font-family: var(--font-mono) !important;
+    color: var(--cy) !important;
+    background: #02090c !important;
+    border: 1px solid rgba(0,229,255,.25) !important;
+    border-radius: 3px !important;
+    text-shadow: 0 0 6px rgba(0,229,255,.7) !important;
+    box-shadow: inset 0 0 8px rgba(0,229,255,.08), inset 0 1px 3px rgba(0,0,0,.8) !important;
+    padding: 2px 7px !important;
+    letter-spacing: .04em;
+}
+
+/* ---------- KNOB: cincin neon + pointer glow (pure CSS) ---------- */
+.knob-dial::before, .knob-dial::after { content: none !important; display: none !important; }
+.knob-dial {
+    background:
+        radial-gradient(circle at 50% 42%, #0e1b24 0%, #0a141c 55%, #060d13 100%) !important;
+    border: 2px solid rgba(0,229,255,.35) !important;
+    border-radius: 50% !important;
+    box-shadow:
+        0 0 10px rgba(0,229,255,.25),
+        inset 0 0 12px rgba(0,229,255,.1),
+        inset 0 2px 4px rgba(0,0,0,.6) !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+.knob-cap { background: transparent !important; box-shadow: none !important; border: none !important;
+    position: absolute !important; inset: 0 !important; }
+.knob-pointer {
+    position: absolute !important;
+    top: 12% !important; left: 50% !important;
+    width: 3px !important; height: 34% !important;
+    transform: translateX(-50%) !important;
+    background: linear-gradient(180deg, var(--cy-bright), var(--cy)) !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 6px rgba(0,229,255,.9), 0 0 12px rgba(0,229,255,.5) !important;
+    z-index: 2 !important;
+}
+
+/* ---------- FADER KUSTOM: track neon + cap bercahaya ---------- */
+.eq-slider-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.eq-slider-group label { color: #7fa8b4 !important; font-size: 11px; font-family: var(--font-mono); }
+.fader-custom {
+    position: relative; width: 38px; height: 120px;
+    cursor: ns-resize; touch-action: none;
+    user-select: none; -webkit-user-select: none;
+}
+.fader-track {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 4px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #02090c, #06131a 50%, #02090c);
+    border: 1px solid rgba(0,229,255,.2);
+    border-radius: 3px;
+    box-shadow: inset 0 0 6px rgba(0,229,255,.15);
+}
+.fader-cap {
+    position: absolute; left: 50%;
+    width: 30px; height: 16px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #123240, #0a1c26);
+    border: 1px solid var(--cy);
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0,229,255,.5), inset 0 1px 0 rgba(108,245,255,.4);
+    pointer-events: none;
+}
+.fader-cap::after {
+    content: ''; position: absolute; left: 3px; right: 3px; top: 50%; height: 2px;
+    transform: translateY(-50%);
+    background: var(--cy-bright); border-radius: 1px;
+    box-shadow: 0 0 5px rgba(0,229,255,.9);
+}
+
+/* ---------- TOMBOL ---------- */
+.btn-sm {
+    background: rgba(0,229,255,.06) !important;
+    border: 1px solid rgba(0,229,255,.3) !important;
+    color: var(--cy-bright) !important;
+    border-radius: 5px !important;
+    text-shadow: 0 0 6px rgba(0,229,255,.4) !important;
+    box-shadow: inset 0 0 8px rgba(0,229,255,.06) !important;
+    font-weight: 600 !important;
+    transition: all .2s;
+}
+.btn-sm:hover { background: rgba(0,229,255,.14) !important; box-shadow: var(--glow-cy) !important; }
+.btn-sm:active { transform: translateY(1px); }
+
+/* ---------- RENDER MASTER: bar neon glow ---------- */
+.btn-accent.btn-block, #btnMaster {
+    background: linear-gradient(180deg, rgba(0,229,255,.18), rgba(0,120,150,.12)) !important;
+    border: 1.5px solid var(--cy) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--glow-cy), inset 0 0 16px rgba(0,229,255,.12) !important;
+    color: #eafcff !important;
+    font-family: var(--font-sans) !important; font-weight: 700 !important;
+    letter-spacing: .1em; text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0,229,255,.7) !important;
+    filter: none !important;
+    transition: all .2s;
+}
+.btn-accent.btn-block .btn-label, #btnMaster .btn-label {
+    background: none !important; -webkit-text-fill-color: #eafcff !important;
+    color: #eafcff !important; filter: none !important;
+}
+.btn-accent.btn-block:hover, #btnMaster:hover {
+    background: linear-gradient(180deg, rgba(0,229,255,.28), rgba(0,120,150,.18)) !important;
+    box-shadow: 0 0 16px rgba(0,229,255,.7), 0 0 30px rgba(0,229,255,.35), inset 0 0 20px rgba(0,229,255,.2) !important;
+}
+.btn-accent.btn-block:active, #btnMaster:active { transform: translateY(1px); }
+
+/* ---------- CHAIN items ---------- */
+.chain-step {
+    background: linear-gradient(180deg, rgba(10,20,28,.9), rgba(6,11,17,.9)) !important;
+    border: 1px solid rgba(0,229,255,.15) !important;
+    border-radius: 7px !important;
+}
+.chain-icon {
+    background: radial-gradient(circle at 40% 35%, #0affd8, #0a8a9c) !important;
+    color: #02181c !important;
+    box-shadow: 0 0 10px rgba(0,229,255,.5) !important;
+}
+
+/* ---------- REL RACK dihapus (tema futuristik tak pakai) ---------- */
+.app-container::before, .app-container::after { display: none !important; }
+.app-main, .app-header { padding-left: 24px !important; padding-right: 24px !important; }
+
+/* ---------- PLAYER BAR ---------- */
+.player-bar {
+    background: linear-gradient(180deg, rgba(6,12,20,.96), rgba(3,6,11,.98)) !important;
+    border-top: 1px solid var(--panel-edge) !important;
+    box-shadow: 0 -4px 20px rgba(0,229,255,.06) !important;
+}
+.player-btn, .monitor-btn {
+    background: rgba(0,229,255,.06) !important;
+    border: 1px solid rgba(0,229,255,.25) !important;
+    color: var(--cy-bright) !important;
+}
+.player-btn.active {
+    background: rgba(0,229,255,.18) !important;
+    box-shadow: var(--glow-cy) !important;
+}
+
+/* dropdown / select futuristik */
+select, .setting-row select {
+    background: #02090c !important;
+    border: 1px solid rgba(0,229,255,.25) !important;
+    color: var(--cy-bright) !important;
+    border-radius: 5px !important;
+}
+
+/* ============================================================
+   HEADER BRAND — nama app & logo futuristik (rev26)
+   ============================================================ */
+.logo { display: flex; align-items: center; gap: 14px; }
+
+/* Logo mark: bingkai neon cyan + glow blend */
+.logo-mark, .logo img.logo-img {
+    width: 40px !important; height: 40px !important;
+    border-radius: 9px !important;
+    border: 1px solid rgba(0,229,255,.5) !important;
+    box-shadow:
+        0 0 12px rgba(0,229,255,.4),
+        inset 0 0 8px rgba(0,229,255,.15),
+        0 2px 8px rgba(0,0,0,.6) !important;
+    background: #04141a;
+}
+
+/* Nama app: font tebal futuristik + gradasi cyan */
+.logo h1 {
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 22px !important;
+    letter-spacing: .03em !important;
+    margin: 0 !important;
+    /* "GRCmastering" putih kebiruan bercahaya */
+    color: #dff6fb !important;
+    text-shadow: 0 0 14px rgba(0,229,255,.35), 0 0 2px rgba(0,229,255,.5) !important;
+    position: relative;
+}
+/* "Studio" gradasi cyan neon menyala */
+.logo h1 .accent {
+    background: linear-gradient(120deg, #00e5ff 0%, #6cf5ff 50%, #00b8d4 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    filter: drop-shadow(0 0 8px rgba(0,229,255,.6)) !important;
+    text-shadow: none !important;
+    font-weight: 800 !important;
+}
+/* garis aksen tipis bercahaya di bawah nama (opsional detail futuristik) */
+.logo h1::after {
+    content: ''; position: absolute; left: 0; bottom: -3px;
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, rgba(0,229,255,.7), rgba(0,229,255,0));
+    box-shadow: 0 0 6px rgba(0,229,255,.5);
+}
+
+/* ============================================================
+   FEEDBACK rev27 — toggle cyan glow + sudut 4 + background convert
+   ============================================================ */
+/* Toggle aktif: MERAH tetap merah, tapi menyala (glow) */
+.toggle input:checked + .toggle-slider {
+    background: linear-gradient(180deg, #ff3b4e, #d81028) !important;
+    border-color: #ff3b4e !important;
+    box-shadow: 0 0 10px rgba(255,45,70,.7), 0 0 18px rgba(255,45,70,.4), inset 0 0 8px rgba(255,90,110,.4) !important;
+}
+.toggle input:checked + .toggle-slider:before {
+    background: #fff !important;
+    box-shadow: 0 0 6px rgba(255,90,110,.8) !important;
+}
+
+/* ---- BRAND CARD (trademark di tab Convert, kolom kanan) ---- */
+.brand-card {
+    padding: 0 !important;
+    overflow: hidden;
+    /* isi ruang kolom kanan: foto jadi besar, ruang kosong hilang */
+    min-height: 640px;
+    display: flex; flex-direction: column;
+    /* tanpa border/frame/shadow sesuai permintaan — foto tampil bersih */
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin-bottom: 24px;
+}
+.brand-card:hover { transform: none !important; border: none !important; }
+.brand-photo {
+    flex: 1 1 auto;
+    position: relative;
+    min-height: 560px;
+    /* GANTI foto Anda di sini: ganti brand_placeholder.jpg dgn nama file foto Anda */
+    /* 'cover' + posisi tengah: foto MENGISI PENUH kotak (tidak ada ruang kosong).
+       Bagian tepi mungkin sedikit ter-crop — itu wajar untuk mengisi penuh. */
+    background: url('/static/img/brand_placeholder.jpg') center center / cover no-repeat;
+    background-color: #0a1622;
+}
+/* overlay gradient supaya menyatu dgn tema + teks terbaca */
+.brand-photo::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6,12,20,.25) 0%, rgba(6,12,20,.15) 60%, rgba(6,12,20,.85) 100%);
+    pointer-events: none;
+}
+.brand-credit {
+    text-align: center;
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .08em;
+    color: var(--cy-bright);
+    text-shadow: 0 0 8px rgba(0,229,255,.5);
+    background: linear-gradient(180deg, rgba(6,12,20,.6), rgba(4,8,14,.95));
+    border-top: 1px solid rgba(0,229,255,.2);
+}
+
+/* ============================================================
+   rev28 — SEMUA elemen MERAH tetap merah tapi MENYALA (glow)
+   Tidak mengubah warna, hanya menambah cahaya.
+   ============================================================ */
+/* strip aksen merah di header panel */
+.card-header h3::before {
+    background: #ff3c50 !important;
+    box-shadow: 0 0 8px rgba(255,60,80,.9), 0 0 16px rgba(255,60,80,.5) !important;
+}
+/* bintang merah drop-zone */
+.drop-icon {
+    background: none !important;
+    -webkit-text-fill-color: #ff3c50 !important;
+    color: #ff3c50 !important;
+    filter: drop-shadow(0 0 10px rgba(255,60,80,.8)) drop-shadow(0 0 20px rgba(255,60,80,.4)) !important;
+}
+/* tombol danger (hapus file ×) */
+.btn-danger {
+    color: #ff3c50 !important;
+    text-shadow: 0 0 6px rgba(255,60,80,.7) !important;
+    border-color: rgba(255,60,80,.4) !important;
+}
+.btn-danger:hover {
+    box-shadow: 0 0 10px rgba(255,60,80,.6) !important;
+}
+/* titik indikator merah (issue-dot, live-dot) */
+.issue-dot, .live-dot.on {
+    background: #ff3c50 !important;
+    box-shadow: 0 0 8px rgba(255,60,80,.9), 0 0 14px rgba(255,60,80,.5) !important;
+}
+
+/* rev28b — strip merah header digeser supaya corner kiri-atas bersih */
+.card-header { padding-left: 20px !important; }
+.card-header h3::before,
+.card-header .section-label::before {
+    left: 8px !important;
+    top: 60% !important;              /* turun sedikit, tidak dempet corner atas */
+    height: 55% !important;
+}
+/* corner kiri-atas: beri jarak sedikit dari tepi biar tidak nabrak strip */
+.card::before { top: 8px !important; left: 8px !important; }
+
+/* ============================================================
+   rev29 — bersihkan garis cyan aneh kiri-atas + corner brand card
+   ============================================================ */
+/* Strip aksen header: pendekkan & posisikan agar TIDAK bertabrakan
+   dengan bracket corner kiri-atas. Cukup jadi titik kecil di tengah teks. */
+.card-header h3::before,
+.card-header .section-label::before {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    height: 40% !important;
+    left: 6px !important;
+}
+/* Corner kiri-atas: geser sedikit ke dalam supaya berdiri sendiri bersih */
+.card::before { top: 8px !important; left: 8px !important; }
+
+/* Brand card (foto trademark): HILANGKAN semua corner bracket */
+.brand-card::before, .brand-card::after,
+.brand-card > .card-body::before, .brand-card > .card-body::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* rev29b — HILANGKAN strip aksen header (yg bikin garis dobel di kiri-atas).
+   Cukup bracket corner saja yang jadi aksen sudut. */
+.card-header h3::before,
+.card-header .section-label::before {
+    display: none !important;
+    content: none !important;
+}
+.card-header { padding-left: 14px !important; }
+
+/* rev30 — judul header tiap box rata TENGAH (presisi, tidak menempel pinggir) */
+.card-header {
+    text-align: center !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.card-header h3, .card-header .section-label, .card-header .card-title {
+    width: 100%;
+    text-align: center !important;
+}
+
+/* rev30b — judul header center (h3 pakai flex, jadi center via justify-content) */
+.card-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+}
+.card-header h3 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+
+/* rev30c — judul tab Master (section-label + Pre-Master) rata TENGAH */
+.section-label {
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100%;
+}
+/* Pre-Master header: judul di tengah, kontrol (IN/OUT/Ref) tetap di kanan.
+   Header ini pakai layout khusus, jadi h3-nya saja yang center dlm ruangnya. */
+.premaster-panel .card-header h3,
+.card-header h3 {
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+/* ============================================================
+   ALBUM MASTERING TAB (rev31) — cyan futuristik
+   ============================================================ */
+.album-layout { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }
+.album-count {
+    text-align: center; margin-top: 10px;
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--cy); letter-spacing: .05em;
+}
+.album-hint { font-size: 11px; color: #7fa8b4; margin: 8px 0 14px; line-height: 1.5; }
+.text-input {
+    background: #02090c !important; border: 1px solid rgba(0,229,255,.25) !important;
+    color: var(--cy-bright) !important; border-radius: 5px !important;
+    padding: 7px 10px !important; width: 100%; font-family: var(--font-sans);
+}
+
+/* daftar track */
+.album-tracks { display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+.album-empty {
+    text-align: center; color: #5f8290; font-size: 13px;
+    padding: 40px 20px; font-style: italic;
+}
+.album-track {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(12,22,30,.9), rgba(7,13,20,.9));
+    border: 1px solid rgba(0,229,255,.15);
+    border-radius: 8px;
+    transition: border-color .2s;
+}
+.album-track.processing { border-color: rgba(0,229,255,.5); box-shadow: 0 0 12px rgba(0,229,255,.15); }
+.album-track.done { border-color: rgba(0,229,255,.35); }
+.album-track.error { border-color: rgba(255,60,80,.5); }
+.album-track-num {
+    width: 26px; height: 26px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 40% 35%, #0affd8, #0a8a9c);
+    color: #02181c; font-weight: 700; font-size: 12px;
+    border-radius: 50%; box-shadow: 0 0 8px rgba(0,229,255,.4);
+}
+.album-track-info { flex: 1 1 auto; min-width: 0; }
+.album-track-name {
+    font-size: 13px; color: #dff6fb; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px;
+}
+.album-track-bar {
+    height: 4px; background: #02090c; border-radius: 2px; overflow: hidden;
+    box-shadow: inset 0 0 3px rgba(0,0,0,.8);
+}
+.album-track-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, #00b8d4, #6cf5ff);
+    box-shadow: 0 0 6px rgba(0,229,255,.7);
+    transition: width .3s ease;
+}
+.album-track-right { flex-shrink: 0; min-width: 60px; text-align: right; }
+
+/* ===== animasi proses berjalan (biar tak terlihat stuck) ===== */
+.album-track.processing {
+    animation: albumRowPulse 1.6s ease-in-out infinite;
+}
+@keyframes albumRowPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(0,229,255,.12); }
+    50%      { box-shadow: 0 0 18px rgba(0,229,255,.4); }
+}
+.album-track.processing .album-track-bar { position: relative; }
+.album-track.processing .album-track-fill {
+    background: repeating-linear-gradient(
+        45deg,
+        #00b8d4 0px, #00b8d4 6px,
+        #6cf5ff 6px, #6cf5ff 12px
+    );
+    background-size: 200% 100%;
+    animation: albumStripes .7s linear infinite;
+    box-shadow: 0 0 8px rgba(0,229,255,.9);
+}
+@keyframes albumStripes {
+    0%   { background-position: 0 0; }
+    100% { background-position: 17px 0; }
+}
+/* scanner menyapu sepanjang bar — tetap bergerak walau persen belum naik */
+.album-track.processing .album-track-bar::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: 0;
+    width: 26%;
+    background: linear-gradient(90deg, transparent, rgba(160,250,255,.55), transparent);
+    animation: albumScan 1.2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes albumScan {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+/* teks status proses per lagu (Decoding / EQ / Limiter / Finalizing...) */
+.album-track-msg {
+    margin-top: 4px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em;
+    color: #7fd9e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    animation: albumMsgGlow 1.4s ease-in-out infinite;
+}
+@keyframes albumMsgGlow {
+    0%, 100% { opacity: .55; text-shadow: none; }
+    50%      { opacity: 1; text-shadow: 0 0 8px rgba(0,229,255,.6); }
+}
+/* bar indeterminate: persen masih 0 (decode/analisis) — bar tetap "hidup" */
+.album-track-bar.indeterminate .album-track-fill {
+    width: 30% !important;
+    animation: albumIndet 1.1s ease-in-out infinite alternate, albumStripes .7s linear infinite;
+}
+@keyframes albumIndet {
+    0%   { margin-left: 0; }
+    100% { margin-left: 70%; }
+}
+.album-retry {
+    color: var(--cy-bright) !important; padding: 4px 10px !important;
+    font-size: 14px !important;
+}
+/* Petunjuk alur Master (Opsi 2: Preview = Master) */
+.master-hint {
+    margin: 10px 2px 0; padding: 10px 12px;
+    font-size: 11px; line-height: 1.5; color: #8fb8c4;
+    border-left: 2px solid var(--cy); background: rgba(0,229,255,.05);
+    border-radius: 4px;
+}
+.master-hint b { color: var(--cy-bright); }
+.result-note {
+    font-size: 11px; color: #8fb8c4; margin: 2px 0 12px; line-height: 1.5;
+}
+.album-proc-label {
+    display: block; margin-top: 2px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em;
+    color: var(--cy); animation: albumBlink 1s steps(2, start) infinite;
+}
+@keyframes albumBlink { 50% { opacity: .25; } }
+
+/* ===== preview per lagu: klik judul → A/B di player ===== */
+.album-track-info { cursor: pointer; }
+.album-track-info:hover .album-track-name { color: #8ff4ff; text-shadow: 0 0 8px rgba(0,229,255,.55); }
+.album-track.selected {
+    border-color: var(--cy);
+    background: linear-gradient(180deg, rgba(0,60,75,.55), rgba(4,20,28,.9));
+    box-shadow: 0 0 14px rgba(0,229,255,.35), inset 0 0 18px rgba(0,229,255,.08);
+}
+.album-track.selected .album-track-name { color: #aefaff; }
+.album-track.selected .album-track-num {
+    background: radial-gradient(circle at 40% 35%, #aefaff, #00c2d8);
+    box-shadow: 0 0 12px rgba(0,229,255,.8);
+}
+.album-done-mark {
+    color: #35ffb5; font-size: 13px; margin-right: 8px;
+    text-shadow: 0 0 8px rgba(53,255,181,.7);
+}
+.album-preview-hint {
+    font-size: 11px; color: #5f8290; font-style: italic;
+    letter-spacing: .02em;
+}
+
+/* slot Fine Tuning di halaman Album */
+.album-ft-slot { margin-bottom: 16px; }
+.album-ft-slot:empty { display: none; margin: 0; }
+
+.album-pct { font-family: var(--font-mono); font-size: 12px; color: var(--cy); }
+.album-err { font-family: var(--font-mono); font-size: 12px; color: #ff3c50; text-shadow: 0 0 6px rgba(255,60,80,.6); }
+.album-rm { color: #ff5a6e !important; padding: 4px 10px !important; }
+.album-dl { color: var(--cy-bright) !important; }
+.album-actions { margin-top: 14px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+#btnAlbumDlWav, #btnAlbumDlZip {
+    background: linear-gradient(180deg, rgba(0,229,255,.18), rgba(0,120,150,.12)) !important;
+    border: 1.5px solid var(--cy) !important; color: #eafcff !important;
+    box-shadow: var(--glow-cy) !important; font-weight: 700 !important;
+    letter-spacing: .06em; padding: 10px 24px !important;
+}
+#btnAlbumDlWav:hover, #btnAlbumDlZip:hover { box-shadow: 0 0 16px rgba(0,229,255,.7) !important; }
+#btnAlbumDlWav:disabled, #btnAlbumDlZip:disabled { opacity: .5; cursor: wait; }
+
+@media (max-width: 900px) {
+    .album-layout { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   rev31 — Brand card: foto BESAR mengisi penuh, TANPA border/frame.
+   Ditaruh di akhir file agar menang atas sisa aturan .card tema lama.
+   ============================================================ */
+.tab-panel .brand-card,
+.brand-card {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    min-height: 640px !important;
+}
+.tab-panel .brand-card:hover,
+.brand-card:hover {
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.tab-panel .brand-card .brand-photo,
+.brand-photo {
+    min-height: 560px !important;
+    background: url('/static/img/brand_placeholder.jpg') center center / cover no-repeat !important;
+    background-color: #0a1622 !important;
+    border-radius: 0 !important;
+}
