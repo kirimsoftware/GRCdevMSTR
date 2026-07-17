@@ -197,7 +197,12 @@ const Album = {
                     body: JSON.stringify({
                         filepath: up.filepath, task_id: up.task_id, filename: t.name,
                         genre, platform, remove_watermark: removeWm,
-                        settings: { ...(ftSettings || {}), adaptive: adaptive }
+                        settings: {
+                            ...(ftSettings || {}),
+                            adaptive: adaptive,
+                            sample_rate: parseInt(document.getElementById('albumSampleRate')?.value || '44100'),
+                            bit_depth: document.getElementById('albumBitDepth')?.value || '24',
+                        }
                     })
                 });
 
