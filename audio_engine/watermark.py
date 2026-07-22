@@ -29,7 +29,14 @@ def _spectral_subtraction(signal, sr, strength):
     nperseg = 4096
     noverlap = 3072  # 75% overlap for artifact-free reconstruction
 
-    f, t, Zxx = stft(signal, sr, nperseg=nperseg, noverlap=noverlap)
+    # MEM FIX: proses di float32/complex64 (bukan float64/complex128).
+    # Lagu 4 menit stereo di complex128 bisa >1GB per kanal (STFT + magnitude
+    # + phase + salinan) -> MemoryError di Mac yg memorinya terpakai. float32
+    # memotong setengah; presisinya setara >24-bit, jauh di atas ambang dengar.
+    in_dtype = signal.dtype
+    signal32 = np.asarray(signal, dtype=np.float32)
+
+    f, t, Zxx = stft(signal32, sr, nperseg=nperseg, noverlap=noverlap)
     magnitude = np.abs(Zxx)
     phase = np.angle(Zxx)
 
@@ -59,11 +66,11 @@ def _spectral_subtraction(signal, sr, strength):
     # This blurs the mask so much that isolated "alien" bins cannot exist.
     gain = scipy.ndimage.gaussian_filter(gain, sigma=(4.0, 8.0))
 
-    Zxx_clean = magnitude * gain * np.exp(1j * phase)
+    Zxx_clean = magnitude * gain * np.exp(1j * phase).astype(np.complex64)
     _, cleaned = istft(Zxx_clean, sr, nperseg=nperseg, noverlap=noverlap)
 
     gc.collect()
-    return cleaned[:len(signal)]
+    return cleaned[:len(signal)].astype(in_dtype, copy=False)
 
 
 def _noise_gate(signal, sr, threshold_db=-45):
@@ -83,8 +90,16 @@ def _noise_gate(signal, sr, threshold_db=-45):
     # Create soft mask
     mask = np.clip((amp_env - thresh_lower) / (threshold_amp - thresh_lower + 1e-10), 0.0, 1.0)
     
-    # Smooth the mask (Attack/Release of ~50ms)
-    mask_smooth = scipy.ndimage.gaussian_filter1d(mask, sigma=int(sr * 0.05))
+    # Smooth the mask (Attack/Release ~50ms).
+    # PERF FIX: gaussian_filter1d dgn sigma=sr*0.05 (=2205 @44.1k) butuh kernel
+    # ~17.000 tap -> puluhan detik per menit audio (aplikasi tampak STUCK).
+    # Ganti dgn cascade 3x box filter: hasil smoothing ~identik gaussian
+    # (central limit theorem, sigma_eq = w/2 = sr*0.05 — sama spt sebelumnya)
+    # tapi O(n), selesai < 1 detik. Karakter attack/release tidak berubah.
+    w = max(3, int(sr * 0.10))
+    mask_smooth = mask
+    for _ in range(3):
+        mask_smooth = scipy.ndimage.uniform_filter1d(mask_smooth, size=w)
     
     return signal * mask_smooth
 
