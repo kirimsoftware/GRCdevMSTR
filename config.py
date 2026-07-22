@@ -2,19 +2,24 @@ import os
 import sys
 import multiprocessing
 
+
+def _user_data_dir():
+    """Folder data milik user — selalu bisa ditulis, di luar bundle aplikasi."""
+    if sys.platform == 'darwin':
+        return os.path.expanduser('~/Library/Application Support/GRCmasteringStudio')
+    elif os.name == 'nt':
+        return os.path.join(
+            os.environ.get('LOCALAPPDATA', os.path.expanduser('~')),
+            'GRCmasteringStudio')
+    return os.path.expanduser('~/.grcmasteringstudio')
+
+
 if getattr(sys, 'frozen', False):
     # Berjalan sebagai app terpaket (PyInstaller): resource read-only ada di
     # _MEIPASS, sedangkan file kerja (upload/output/temp) disimpan di folder
     # data milik user agar bundle .app/.exe tidak perlu ditulisi.
     BASE_DIR = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
-    if sys.platform == 'darwin':
-        DATA_DIR = os.path.expanduser('~/Library/Application Support/GRCmasteringStudio')
-    elif os.name == 'nt':
-        DATA_DIR = os.path.join(
-            os.environ.get('LOCALAPPDATA', os.path.expanduser('~')),
-            'GRCmasteringStudio')
-    else:
-        DATA_DIR = os.path.expanduser('~/.grcmasteringstudio')
+    DATA_DIR = _user_data_dir()
     UPLOAD_FOLDER = os.path.join(DATA_DIR, 'uploads')
     OUTPUT_FOLDER = os.path.join(DATA_DIR, 'outputs')
     TEMP_FOLDER = os.path.join(DATA_DIR, 'temp')
@@ -24,9 +29,42 @@ else:
     OUTPUT_FOLDER = os.path.join(BASE_DIR, 'static', 'outputs')
     TEMP_FOLDER = os.path.join(BASE_DIR, 'static', 'temp')
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-os.makedirs(TEMP_FOLDER, exist_ok=True)
+
+def _writable(folder):
+    """True hanya jika folder benar-benar bisa DITULIS (bukan sekadar ada).
+
+    Penting untuk macOS App Translocation: bundle read-only bisa saja sudah
+    berisi foldernya (makedirs exist_ok lolos) tapi menulis file tetap gagal.
+    """
+    try:
+        os.makedirs(folder, exist_ok=True)
+        probe = os.path.join(folder, '.write_test')
+        with open(probe, 'w') as f:
+            f.write('ok')
+        os.remove(probe)
+        return True
+    except OSError:
+        return False
+
+
+def _ensure_work_dirs(upload, output, temp):
+    """Pastikan ketiga folder kerja bisa ditulis; kalau tidak (mis. app jalan
+    dari mount read-only karena App Translocation), alihkan SEMUA ke folder
+    data user. Jangan pernah menulis ke dalam bundle aplikasi."""
+    if all(_writable(f) for f in (upload, output, temp)):
+        return upload, output, temp
+    d = _user_data_dir()
+    u = os.path.join(d, 'uploads')
+    o = os.path.join(d, 'outputs')
+    t = os.path.join(d, 'temp')
+    os.makedirs(u, exist_ok=True)
+    os.makedirs(o, exist_ok=True)
+    os.makedirs(t, exist_ok=True)
+    return u, o, t
+
+
+UPLOAD_FOLDER, OUTPUT_FOLDER, TEMP_FOLDER = _ensure_work_dirs(
+    UPLOAD_FOLDER, OUTPUT_FOLDER, TEMP_FOLDER)
 
 MAX_CONTENT_LENGTH = 500 * 1024 * 1024  # 500MB
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'flac', 'ogg', 'aiff', 'm4a'}
