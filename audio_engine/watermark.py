@@ -76,31 +76,38 @@ def _spectral_subtraction(signal, sr, strength):
 def _noise_gate(signal, sr, threshold_db=-45):
     # Vectorized zero-phase envelope extraction
     sq = signal ** 2
-    
+
     import scipy.ndimage
     # Power envelope (50ms window)
     window_samples = int(sr * 0.05)
     power_env = scipy.ndimage.uniform_filter1d(sq, size=window_samples)
     amp_env = np.sqrt(power_env)
-    
-    # Calculate threshold (linear)
-    threshold_amp = 10 ** (threshold_db / 20.0)
+
+    # BUG FIX (lagu senyap): threshold TIDAK boleh absolut. Lagu yang di-export
+    # pelan (umum pada materi AI) bisa seluruhnya berada di bawah -45dB absolut,
+    # sehingga gate menutup SEMUANYA -> output senyap. Buat threshold RELATIF
+    # terhadap level lagu: ukur puncak envelope, lalu tempatkan gate jauh di
+    # bawahnya. Dengan begini gate hanya menyingkirkan bagian yg benar-benar
+    # hening relatif thd lagu, bukan menggate lagu pelan secara keseluruhan.
+    ref = np.percentile(amp_env, 95)  # "level lagu" (puncak wajar, tahan outlier)
+    if ref < 1e-6:
+        return signal  # benar-benar senyap/near-zero: jangan sentuh
+    rel_floor_db = -45.0          # bagian >45dB di bawah level lagu dianggap silence
+    threshold_amp = ref * (10 ** (rel_floor_db / 20.0))
     thresh_lower = threshold_amp * 0.5  # -6dB knee
-    
+
     # Create soft mask
     mask = np.clip((amp_env - thresh_lower) / (threshold_amp - thresh_lower + 1e-10), 0.0, 1.0)
-    
+
     # Smooth the mask (Attack/Release ~50ms).
-    # PERF FIX: gaussian_filter1d dgn sigma=sr*0.05 (=2205 @44.1k) butuh kernel
-    # ~17.000 tap -> puluhan detik per menit audio (aplikasi tampak STUCK).
-    # Ganti dgn cascade 3x box filter: hasil smoothing ~identik gaussian
-    # (central limit theorem, sigma_eq = w/2 = sr*0.05 — sama spt sebelumnya)
-    # tapi O(n), selesai < 1 detik. Karakter attack/release tidak berubah.
+    # PERF FIX: gaussian sigma=sr*0.05 (=2205 @44.1k) = kernel ~17.000 tap ->
+    # puluhan detik per menit audio (aplikasi tampak STUCK). Cascade 3x box
+    # filter memberi smoothing ~identik gaussian (central limit) tapi O(n).
     w = max(3, int(sr * 0.10))
     mask_smooth = mask
     for _ in range(3):
         mask_smooth = scipy.ndimage.uniform_filter1d(mask_smooth, size=w)
-    
+
     return signal * mask_smooth
 
 
