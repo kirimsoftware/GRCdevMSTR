@@ -22,26 +22,13 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 
 PROGRESS = {}
 RESULTS = {}
-# Album bisa 15 lagu + retry + beberapa sesi master dalam 1 run aplikasi.
-# Limit 50 dulu terlalu kecil → _trim bisa menghapus task yg MASIH diproses →
-# polling kehilangan progress/hasil → lagu "gagal" secara acak. Naikkan + jaga.
-MAX_TRACKED_TASKS = 200
+MAX_TRACKED_TASKS = 50
 
 
 def _trim(store, keep=MAX_TRACKED_TASKS):
-    # Bound memory: buang entri TERLAMA, tapi JANGAN buang task yg belum selesai.
-    # Task dianggap "selesai" kalau sudah ada di RESULTS (sukses/gagal final).
-    if len(store) <= keep:
-        return
-    removable = [k for k in list(store.keys()) if k in RESULTS]
-    # buang yg terlama & sudah selesai dulu
-    for k in removable:
-        if len(store) <= keep:
-            break
-        store.pop(k, None)
-    # fallback ekstrem (kalau semua masih jalan): baru buang yg terlama
+    # Bound memory: drop oldest entries (dicts keep insertion order in py3.7+)
     while len(store) > keep:
-        store.pop(next(iter(store)), None)
+        store.pop(next(iter(store)))
 
 
 def allowed_file(filename):

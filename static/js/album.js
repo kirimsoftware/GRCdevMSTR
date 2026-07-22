@@ -157,9 +157,6 @@ const Album = {
         const adaptive = document.getElementById('albumAdaptive').checked;
         const removeWm = document.getElementById('albumWatermark').checked;
         const useFineTune = document.getElementById('albumFineTune')?.checked;
-        // Sample rate & bit depth berlaku untuk SEMUA lagu album (seragam).
-        const sampleRate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
-        const bitDepth = document.getElementById('albumBitDepth')?.value || '24';
 
         // Fine Tuning: nilai panel Pre-Master (EQ + compressor) dipakai untuk
         // semua lagu. Nilai panel menang; adaptive mengisi sisanya di backend.
@@ -168,66 +165,37 @@ const Album = {
             ftSettings = Uploader.collectMixSettings();
             delete ftSettings.stereo_width;
         }
-        // sisipkan sr & bit depth ke ftSettings agar ikut ke tiap processTrack
-        ftSettings.sample_rate = sampleRate;
-        ftSettings.bit_depth = bitDepth;
+        // Sample rate & bit depth berlaku seragam untuk semua lagu album.
+        ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
+        ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
 
         for (let i = 0; i < this.tracks.length; i++) {
             const t = this.tracks[i];
             if (t.status === 'done') continue;
-            // Retry otomatis: race condition biasanya lolos di percobaan ke-2.
-            // Coba maksimal 3x sebelum benar-benar menandai lagu ini error.
-            let lastErr = null;
-            let ok = false;
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    if (attempt > 1) {
-                        t.msg = `Retry ${attempt - 1}/2...`;
-                        this.updateTrackBar(i);
-                        await new Promise(r => setTimeout(r, 800)); // beri jeda biar server lega
-                    }
-                    await this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings);
-                    ok = true;
-                    break;
-                } catch (e) {
-                    lastErr = e;
-                }
-            }
-            if (!ok) {
-                t.status = 'error';
-                t.msg = 'Failed: ' + String(lastErr && lastErr.message ? lastErr.message : lastErr || 'unknown');
-                this.render();
+            try {
+                await this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings);
+            } catch (e) {
+                t.status = 'error'; this.render();
             }
         }
         if (btn) btn.disabled = false;
-        const failed = this.tracks.filter(t => t.status === 'error').length;
-        if (failed > 0) {
-            App.notify(`Album selesai — ${failed} lagu gagal (klik ↻ untuk ulang)`, 'error');
-        } else {
-            App.notify('Album selesai di-master', 'success');
-        }
+        App.notify('Album selesai di-master', 'success');
     },
 
     processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings) {
         return new Promise(async (resolve, reject) => {
             try {
-                t.status = 'processing'; t.percent = 0; t.msg = 'Uploading...';
-                t.task_id = null; t.output_url = null; this.render();
+                t.status = 'processing'; t.percent = 0; t.msg = 'Uploading...'; this.render();
 
                 // 1) upload
                 const fd = new FormData();
                 fd.append('file', t.file);
-                let up;
-                try {
-                    const upRes = await fetch('/api/upload', { method: 'POST', body: fd });
-                    if (!upRes.ok) throw new Error('HTTP ' + upRes.status);
-                    up = await upRes.json();
-                } catch (e) { throw new Error('upload failed: ' + (e.message || e)); }
-                if (!up || !up.filepath || !up.task_id) throw new Error('upload gave no task_id');
+                const up = await fetch('/api/upload', { method: 'POST', body: fd }).then(r => r.json());
+                if (!up.filepath) throw new Error('upload failed');
                 t.task_id = up.task_id; t.filepath = up.filepath;
 
                 // 2) master (adaptive per lagu + watermark removal sesuai toggle)
-                const mRes = await fetch('/api/master', {
+                await fetch('/api/master', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         filepath: up.filepath, task_id: up.task_id, filename: t.name,
@@ -235,29 +203,20 @@ const Album = {
                         settings: { ...(ftSettings || {}), adaptive: adaptive }
                     })
                 });
-                if (!mRes.ok) throw new Error('master start HTTP ' + mRes.status);
-                await mRes.json().catch(() => ({}));
 
-                // 3) poll progress lagu ini — pakai loop await (bukan setInterval).
-                //    GUARD RACE: jangan percaya 100% di ~1.5 detik pertama, karena
-                //    progress task ini mungkin belum di-set server (bisa terbaca state
-                //    basi dari task lain). Baru percaya 100% setelah pernah lihat <100
-                //    ATAU waktu minimum berlalu.
+                // 3) poll progress lagu ini — pakai loop await (bukan setInterval)
+                //    supaya tidak ada request bertumpuk / race saat CPU sibuk.
                 const sleep = ms => new Promise(r => setTimeout(r, ms));
-                const t0 = Date.now();
-                let sawBelow100 = false, stale = 0;
                 while (true) {
                     await sleep(500);
                     let p;
                     try {
                         p = await fetch(`/api/progress/${t.task_id}`).then(r => r.json());
-                    } catch (e) { if (++stale > 20) throw new Error('progress unreachable'); continue; }
-                    const pct = p.percent || 0;
-                    if (pct < 100) sawBelow100 = true;
-                    t.percent = pct;
+                    } catch (e) { continue; /* server sibuk — coba lagi */ }
+                    t.percent = p.percent || 0;
                     t.msg = p.message || '';
                     this.updateTrackBar(i);
-                    if (pct >= 100 && (sawBelow100 || Date.now() - t0 > 1500)) break;
+                    if (t.percent >= 100) break;
                 }
 
                 // 4) ambil hasil — server bisa masih menulis file WAV beberapa saat
@@ -266,15 +225,16 @@ const Album = {
                 t.msg = 'Finalizing...'; this.updateTrackBar(i);
                 let res = null;
                 for (let attempt = 0; attempt < 360; attempt++) {
-                    let r;
-                    try { r = await fetch(`/api/result/${t.task_id}`); }
-                    catch (e) { await sleep(500); continue; }
-                    res = await r.json().catch(() => null);
-                    if (res && res.error) return reject(new Error(res.error));
+                    const r = await fetch(`/api/result/${t.task_id}`);
+                    res = await r.json();
+                    if (res && res.error) { t.status = 'error'; t.msg = res.error; this.render(); return reject(new Error(res.error)); }
                     if (res && res.output_url) break;
-                    await sleep(500);
+                    await new Promise(rr => setTimeout(rr, 500));
                 }
-                if (!res || !res.output_url) return reject(new Error('result timeout'));
+                if (!res || !res.output_url) {
+                    t.status = 'error'; t.msg = 'Result timeout';
+                    this.render(); return reject(new Error('result timeout'));
+                }
 
                 t.output_url = res.output_url;
                 const u = new URL(res.output_url, location.origin);
@@ -288,7 +248,7 @@ const Album = {
                     Player.setProcessed(t.output_url);
                 }
                 resolve();
-            } catch (e) { reject(e); }
+            } catch (e) { t.status = 'error'; t.msg = String(e.message || e); this.render(); reject(e); }
         });
     },
 
@@ -338,21 +298,8 @@ const Album = {
         }
         ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
         ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
-        (async () => {
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    if (attempt > 1) await new Promise(r => setTimeout(r, 800));
-                    await this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings);
-                    return;
-                } catch (e) {
-                    if (attempt === 3) {
-                        t.status = 'error';
-                        t.msg = 'Failed: ' + String(e && e.message ? e.message : e);
-                        this.render();
-                    }
-                }
-            }
-        })();
+        this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings)
+            .catch(() => {});
     },
 
     _doneFiles() {
