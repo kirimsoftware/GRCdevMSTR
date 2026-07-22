@@ -443,7 +443,14 @@
         async fetchResult(taskId, tab, attempt = 0) {
             try {
                 const r = await fetch(`/api/result/${taskId}`);
-                const data = await r.json();
+                // Parse aman: WebKit melempar "The string did not match the
+                // expected pattern" bila payload bukan JSON valid (mis. NaN).
+                // Baca sbg teks dulu supaya kalau invalid, isinya bisa
+                // ditampilkan di pesan error (diagnosa sekali lihat).
+                const raw = await r.text();
+                let data;
+                try { data = JSON.parse(raw); }
+                catch (pe) { throw new Error('invalid result payload: ' + raw.slice(0, 140)); }
                 if (data.pending) {
                     // hasil belum tertulis — coba lagi (maks ~10 detik)
                     if (attempt < 20) setTimeout(() => this.fetchResult(taskId, tab, attempt + 1), 500);

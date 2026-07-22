@@ -42,6 +42,30 @@ def progress_tracker(task_id):
     return callback
 
 
+def _clean_stats(stats):
+    """Paksa nilai stats jadi JSON yang valid untuk BROWSER.
+
+    Python mengizinkan NaN/Infinity di json.dumps (non-standar), tapi
+    JSON.parse di browser (khususnya WebKit/Safari) MENOLAKNYA — gejalanya
+    'The string did not match the expected pattern' saat fetch result.
+    Nilai non-finite atau tipe numpy diganti None (frontend menampilkan N/A).
+    """
+    import math
+    if not isinstance(stats, dict):
+        return stats
+    out = {}
+    for k, v in stats.items():
+        if v is None or isinstance(v, (bool, int, str)):
+            out[k] = v
+            continue
+        try:
+            f = float(v)
+            out[k] = f if math.isfinite(f) else None
+        except (TypeError, ValueError):
+            out[k] = str(v)
+    return out
+
+
 def _log_error(task_id, exc):
     """Laporkan exception dari background thread ke UI + tulis ke file log."""
     import traceback
@@ -125,7 +149,7 @@ def convert():
             RESULTS[task_id] = {
                 'output_path': out_path,
                 'output_url': f'/api/download?file={os.path.basename(out_path)}&name={encoded_name}',
-                'stats': stats,
+                'stats': _clean_stats(stats),
             }
             cb(100, 'Complete')
             gc.collect()
@@ -210,7 +234,7 @@ def master():
             RESULTS[task_id] = {
                 'output_path': out_path,
                 'output_url': f'/api/download?file={os.path.basename(out_path)}&name={encoded_name}',
-                'stats': stats,
+                'stats': _clean_stats(stats),
             }
             cb(100, 'Complete')
             gc.collect()
