@@ -40,11 +40,23 @@ hiddenimports = (
     collect_submodules('scipy.signal')
     + collect_submodules('soundfile')
     + collect_submodules('cryptography')
+    + collect_submodules('webview')          # jendela native (pywebview)
     + ['pyloudnorm', 'imageio_ffmpeg',
        'cryptography.hazmat.bindings._rust',
        'cryptography.hazmat.primitives.asymmetric.ed25519',
-       'engineio.async_drivers.threading']
+       'engineio.async_drivers.threading',
+       # dependensi runtime pywebview
+       'proxy_tools', 'bottle', 'typing_extensions']
 )
+
+# Backend pywebview berbeda per OS; daftarkan yang relevan saja agar
+# tidak menggagalkan build di platform lain.
+if sys.platform == 'win32':
+    hiddenimports += ['clr', 'pythonnet', 'webview.platforms.winforms',
+                      'webview.platforms.edgechromium']
+elif sys.platform == 'darwin':
+    hiddenimports += ['webview.platforms.cocoa', 'objc', 'Foundation',
+                      'AppKit', 'WebKit', 'Quartz']
 
 a = Analysis(
     ['desktop.py'],

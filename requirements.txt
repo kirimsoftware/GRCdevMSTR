@@ -14,3 +14,10 @@ pydub==0.25.1
 werkzeug==3.1.3
 cryptography==44.0.0
 imageio-ffmpeg==0.5.1
+# pywebview: jendela aplikasi NATIVE (bukan membuka browser). Tanpa ini,
+# desktop.py gagal `import webview` dan selalu jatuh ke fallback browser —
+# di Windows berarti browser terbuka + jendela terminal menganggur.
+# Pure-Python; dependensi per-OS terpasang otomatis (pythonnet di Windows,
+# pyobjc di macOS). WebView engine memakai bawaan OS: WKWebView (macOS),
+# WebView2 (Windows 10/11 — sudah bawaan di Win11).
+pywebview==6.2.1
