@@ -15,9 +15,60 @@ def remove_watermark(audio, sr, strength=0.6):
 
 def _process_channel(signal, sr, strength):
     signal = _adaptive_notch_filter(signal, sr, strength)
-    signal = _spectral_subtraction(signal, sr, strength)
+    signal = _spectral_subtraction_chunked(signal, sr, strength)
     signal = _noise_gate(signal, sr, threshold_db=-45)
     return signal
+
+
+def _spectral_subtraction_chunked(signal, sr, strength, chunk_sec=45.0):
+    """Spectral subtraction per potongan agar MEMORI KONSTAN.
+
+    BUG FIX (lagu jadi senyap): STFT sekaligus untuk lagu panjang membuat
+    matriks raksasa (lagu ~4 menit: >0.6GB per kanal sebelum salinan internal
+    scipy). Di mesin yang memorinya terpakai, alokasi ini gagal -> hasil nol
+    -> master senyap (LUFS -inf). Lagu 3:23 lolos, 3:49 tidak: persis di
+    ambang. Dengan chunking, pemakaian memori tidak lagi tergantung durasi.
+
+    Potongan diproses dengan overlap dan disambung memakai crossfade linear
+    supaya tidak ada diskontinuitas yang terdengar di titik sambung.
+    """
+    n = len(signal)
+    chunk = int(sr * chunk_sec)
+    if n <= chunk:
+        return _spectral_subtraction(signal, sr, strength)
+
+    overlap = int(sr * 2.0)          # 2 detik tumpang-tindih untuk crossfade
+    out = np.zeros(n, dtype=signal.dtype)
+    fade = np.linspace(0.0, 1.0, overlap, dtype=np.float64)
+
+    start = 0
+    prev_end = 0
+    while start < n:
+        end = min(start + chunk, n)
+        seg_start = max(0, start - overlap) if start > 0 else 0
+        seg = signal[seg_start:end]
+        proc = _spectral_subtraction(seg, sr, strength)
+
+        if start == 0:
+            out[0:end] = proc[0:end]
+        else:
+            head = start - seg_start           # panjang bagian overlap di proc
+            xf = min(overlap, head, end - start if end > start else 0)
+            if xf > 0:
+                f = fade[:xf] if xf == overlap else np.linspace(0.0, 1.0, xf)
+                a = out[start:start + xf]              # ekor potongan sebelumnya
+                b = proc[head:head + xf]               # kepala potongan ini
+                out[start:start + xf] = a * (1.0 - f) + b * f
+                out[start + xf:end] = proc[head + xf:head + (end - start)]
+            else:
+                out[start:end] = proc[head:head + (end - start)]
+        prev_end = end
+        if end >= n:
+            break
+        start = end
+        del seg, proc
+        gc.collect()
+    return out
 
 
 def _adaptive_notch_filter(signal, sr, strength):
