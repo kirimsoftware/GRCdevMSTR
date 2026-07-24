@@ -9,8 +9,38 @@ import sys
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 APP_NAME = 'GRCmasteringStudio'
+APP_VERSION = '1.0.0'
 IS_MAC = sys.platform == 'darwin'
-IS_WIN = sys.platform.startswith('win')
+IS_WIN = sys.platform == 'win32'
+
+# Version resource untuk Windows (dibaca di Properties > Details > Product version).
+# Dibuat sebagai file sementara agar tidak perlu menyimpan file terpisah di repo.
+_win_version_file = None
+if IS_WIN:
+    _vparts = APP_VERSION.split('.') + ['0', '0', '0', '0']
+    _v = ', '.join(_vparts[:4])
+    _win_vs = f"""VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=({_vparts[0]}, {_vparts[1]}, {_vparts[2]}, 0),
+    prodvers=({_vparts[0]}, {_vparts[1]}, {_vparts[2]}, 0),
+    mask=0x3f, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0,
+    date=(0, 0)),
+  kids=[
+    StringFileInfo([StringTable('040904B0', [
+      StringStruct('CompanyName', 'GRC'),
+      StringStruct('FileDescription', '{APP_NAME}'),
+      StringStruct('FileVersion', '{APP_VERSION}'),
+      StringStruct('InternalName', '{APP_NAME}'),
+      StringStruct('OriginalFilename', '{APP_NAME}.exe'),
+      StringStruct('ProductName', '{APP_NAME}'),
+      StringStruct('ProductVersion', '{APP_VERSION}')])]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)"""
+    import tempfile
+    _fh = tempfile.NamedTemporaryFile('w', suffix='_version.txt', delete=False)
+    _fh.write(_win_vs); _fh.close()
+    _win_version_file = _fh.name
 
 # --- Data files (read-only resources) ---
 datas = [
@@ -82,6 +112,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False,          # tanpa jendela terminal
+    version=_win_version_file,
     icon='vendor/icon.icns' if (IS_MAC and os.path.isfile('vendor/icon.icns'))
          else ('vendor/icon.ico' if (IS_WIN and os.path.isfile('vendor/icon.ico')) else None),
 )
@@ -104,5 +135,7 @@ if IS_MAC:
         info_plist={
             'NSHighResolutionCapable': True,
             'LSMinimumSystemVersion': '11.0',
+            'CFBundleShortVersionString': APP_VERSION,
+            'CFBundleVersion': APP_VERSION,
         },
     )
