@@ -20,6 +20,7 @@ const Album = {
         input.addEventListener('change', () => this.addFiles(input.files));
 
         document.getElementById('btnAlbumMaster')?.addEventListener('click', () => this.masterAll());
+        document.getElementById('btnAlbumReset')?.addEventListener('click', () => this.resetAlbum());
         document.getElementById('btnAlbumDlWav')?.addEventListener('click', () => this.downloadAllWav());
         document.getElementById('btnAlbumDlZip')?.addEventListener('click', () => this.downloadAllZip());
 
@@ -68,6 +69,43 @@ const Album = {
         else if (this.selected > i) this.selected--;
         this.render();
         this.updateCount();
+    },
+
+    resetAlbum() {
+        // Jangan reset kalau masih ada lagu yang sedang diproses.
+        if (this.tracks.some(t => t.status === 'processing')) {
+            App.notify('Tunggu proses selesai sebelum memulai album baru', 'error');
+            return;
+        }
+        if (this.tracks.length > 0 &&
+            !confirm('Clear all tracks and start a new album? Downloaded files are not affected.')) {
+            return;
+        }
+        // Lepas URL objek agar tidak bocor memori.
+        for (const t of this.tracks) {
+            if (t.srcUrl) URL.revokeObjectURL(t.srcUrl);
+        }
+        this.tracks = [];
+        this.selected = -1;
+
+        // Hentikan & kosongkan player bawah.
+        if (typeof Player !== 'undefined' && Player.audioEl) {
+            try {
+                Player.audioEl.pause();
+                Player.audioEl.removeAttribute('src');
+                Player.audioEl.load();
+            } catch (e) { /* abaikan */ }
+            Player.processedUrl = null;
+            Player.currentSource = 'original';
+        }
+
+        // Kosongkan input file agar file yang sama bisa dipilih lagi.
+        const input = document.getElementById('albumFileInput');
+        if (input) input.value = '';
+
+        this.render();
+        this.updateCount();
+        App.notify('Album cleared — ready for new tracks', 'success');
     },
 
     updateCount() {
@@ -166,7 +204,7 @@ const Album = {
             delete ftSettings.stereo_width;
         }
         // Sample rate & bit depth berlaku seragam untuk semua lagu album.
-        ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
+        ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '48000');
         ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
 
         for (let i = 0; i < this.tracks.length; i++) {
@@ -296,7 +334,7 @@ const Album = {
             ftSettings = Uploader.collectMixSettings();
             delete ftSettings.stereo_width;
         }
-        ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
+        ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '48000');
         ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
         this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings)
             .catch(() => {});
