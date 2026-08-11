@@ -82,7 +82,24 @@ def mono_to_stereo(audio):
 
 
 def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
-    sf.write(output_path, audio, sr, subtype=subtype)
+    import numpy as _np
+    data = _np.asarray(audio)
+    channels = 1 if data.ndim == 1 else data.shape[1]
+    # Tulis WAV sambil menyematkan metadata aplikasi (INFO chunk standar WAV),
+    # sehingga hasil mastering teridentifikasi berasal dari GRCmasteringStudio —
+    # sebelumnya output tidak punya metadata sama sekali.
+    try:
+        with sf.SoundFile(output_path, 'w', samplerate=int(sr),
+                          channels=channels, subtype=subtype) as f:
+            try:
+                f.software = 'GRCmasteringStudio'
+                f.comment = 'Mastered with GRCmasteringStudio'
+            except Exception:
+                pass  # sebagian versi/format tak dukung tag — tetap tulis audio
+            f.write(data)
+    except Exception:
+        # fallback: penulisan biasa tanpa metadata (jangan pernah gagal simpan)
+        sf.write(output_path, data, int(sr), subtype=subtype)
     return output_path
 
 
