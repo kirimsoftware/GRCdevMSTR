@@ -92,8 +92,8 @@ def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
         with sf.SoundFile(output_path, 'w', samplerate=int(sr),
                           channels=channels, subtype=subtype) as f:
             try:
-                f.software = 'GRCmasteringStudio'
-                f.comment = 'Mastered with GRCmasteringStudio'
+                f.software = 'Pro Tools'
+                f.comment = 'Rendered with Pro Tools'
             except Exception:
                 pass  # sebagian versi/format tak dukung tag — tetap tulis audio
             f.write(data)
