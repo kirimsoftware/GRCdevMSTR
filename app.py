@@ -228,7 +228,7 @@ def master():
                                           
             original_filename = data.get('filename', 'output')
             base_name = os.path.splitext(original_filename)[0]
-            download_name = f"{base_name}_master.wav"
+            download_name = f"{base_name} Master.wav"
             encoded_name = urllib.parse.quote(download_name)
         
             RESULTS[task_id] = {
@@ -411,7 +411,7 @@ def album_zip():
         # jangan kirim zip kosong — di sisi klien akan tampak "corrupted"
         return jsonify({'error': 'No output files found'}), 404
     buf.seek(0)
-    return send_file(buf, as_attachment=True, download_name=f'{album_name}_mastered.zip',
+    return send_file(buf, as_attachment=True, download_name=f'{album_name} Master.zip',
                      mimetype='application/zip')
 
 
@@ -431,7 +431,7 @@ def album_zip_save():
     album_name = secure_filename(data.get('album', 'Album')) or 'Album'
     downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
     os.makedirs(downloads, exist_ok=True)
-    dest = os.path.join(downloads, f'{album_name}_mastered.zip')
+    dest = os.path.join(downloads, f'{album_name} Master.zip')
     base, ext = os.path.splitext(dest)
     n = 1
     while os.path.exists(dest):

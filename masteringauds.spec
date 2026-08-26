@@ -53,18 +53,37 @@ datas = [
 if os.path.isdir('static/img'):
     datas.append(('static/img', 'static/img'))
 datas += collect_data_files('librosa')
-# imageio-ffmpeg menyimpan binary ffmpeg (arm64 mac / win64) sebagai data file
+# imageio-ffmpeg menyimpan binary ffmpeg (arm64/x86_64 mac, win64) di
+# subfolder 'binaries'. collect_data_files kadang MELEWATKAN binary itu di
+# app terpaket -> decode MP3/M4A gagal ('No such file: ffmpeg'). Sertakan
+# file binary-nya secara EKSPLISIT, baik sebagai data maupun binaries.
 datas += collect_data_files('imageio_ffmpeg')
+try:
+    import imageio_ffmpeg as _iff
+    import glob as _glob
+    _iff_bin_dir = os.path.join(os.path.dirname(_iff.__file__), 'binaries')
+    for _b in _glob.glob(os.path.join(_iff_bin_dir, 'ffmpeg-*')):
+        # taruh di dua lokasi agar _find_ffmpeg pasti menemukannya
+        datas.append((_b, 'imageio_ffmpeg/binaries'))
+        binaries_ffmpeg_extra = _b
+        print(f'[spec] bundling imageio ffmpeg: {os.path.basename(_b)}')
+except Exception as _e:
+    print(f'[spec] PERINGATAN: gagal menemukan binary imageio-ffmpeg: {_e}')
 
 # --- Bundled ffmpeg (disiapkan oleh CI atau manual di folder vendor/) ---
 binaries = []
+# tambahkan binary imageio-ffmpeg juga ke 'binaries' (dengan flag executable)
+try:
+    if 'binaries_ffmpeg_extra' in dir() and os.path.isfile(binaries_ffmpeg_extra):
+        binaries.append((binaries_ffmpeg_extra, 'imageio_ffmpeg/binaries'))
+except Exception:
+    pass
 ffmpeg_name = 'ffmpeg.exe' if IS_WIN else 'ffmpeg'
 ffmpeg_path = os.path.join('vendor', ffmpeg_name)
 if os.path.isfile(ffmpeg_path):
     binaries.append((ffmpeg_path, '.'))
 else:
-    print(f'[spec] PERINGATAN: {ffmpeg_path} tidak ditemukan — '
-          'app akan bergantung pada ffmpeg sistem.')
+    print(f'[spec] INFO: {ffmpeg_path} tidak ada — pakai binary imageio-ffmpeg.')
 
 hiddenimports = (
     collect_submodules('scipy.signal')

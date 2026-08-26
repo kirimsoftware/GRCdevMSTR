@@ -7,22 +7,70 @@ import soundfile as sf
 from config import TEMP_FOLDER, DEFAULT_SAMPLE_RATE
 
 
+def _ensure_exec(path):
+    """Pastikan file bisa dieksekusi (macOS/Linux sering kehilangan flag +x
+    setelah dibundel PyInstaller)."""
+    try:
+        if path and os.path.isfile(path) and not os.access(path, os.X_OK):
+            import stat
+            os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    except Exception:
+        pass
+    return path
+
+
 def _find_ffmpeg():
-    """Cari ffmpeg: binary dari paket imageio-ffmpeg (mendukung mac arm64 &
-    windows), lalu binary vendor yang dibundel PyInstaller, lalu PATH sistem."""
+    """Cari ffmpeg untuk decode MP3/M4A. Urutan:
+    1) binary imageio-ffmpeg via API resmi
+    2) binary imageio-ffmpeg dicari MANUAL di folder bundel (API sering gagal
+       menunjuk path yang benar di dalam app terpaket PyInstaller)
+    3) ffmpeg vendor yang dibundel di _MEIPASS
+    4) ffmpeg sistem (PATH)
+    """
+    import glob
+
+    # (1) API resmi imageio-ffmpeg
     try:
         import imageio_ffmpeg
         exe = imageio_ffmpeg.get_ffmpeg_exe()
         if exe and os.path.isfile(exe):
-            return exe
+            return _ensure_exec(exe)
     except Exception:
         pass
+
+    # (2) cari manual binary 'ffmpeg-*' di folder imageio_ffmpeg/binaries.
+    #     Di app terpaket, modul ada tapi get_ffmpeg_exe bisa salah path.
+    search_dirs = []
+    try:
+        import imageio_ffmpeg as _iff
+        search_dirs.append(os.path.join(os.path.dirname(_iff.__file__), 'binaries'))
+    except Exception:
+        pass
+    if getattr(sys, 'frozen', False):
+        base = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
+        search_dirs += [
+            os.path.join(base, 'imageio_ffmpeg', 'binaries'),
+            base,
+            os.path.join(base, 'Frameworks'),
+        ]
+    for d in search_dirs:
+        if not d or not os.path.isdir(d):
+            continue
+        for pat in ('ffmpeg-*', 'ffmpeg.exe', 'ffmpeg'):
+            hits = sorted(glob.glob(os.path.join(d, pat)))
+            for h in hits:
+                if os.path.isfile(h):
+                    return _ensure_exec(h)
+
+    # (3) ffmpeg vendor dibundel
     if getattr(sys, 'frozen', False):
         base = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
         for name in ('ffmpeg.exe', 'ffmpeg'):
             cand = os.path.join(base, name)
             if os.path.isfile(cand):
-                return cand
+                return _ensure_exec(cand)
+
+    # (4) ffmpeg sistem
     return shutil.which('ffmpeg') or 'ffmpeg'
 
 
@@ -40,9 +88,25 @@ def decode_mp3(input_path, target_sr=DEFAULT_SAMPLE_RATE):
         '-af', 'aresample=resampler=soxr:precision=28',
         output_path
     ]
-    subprocess.run(cmd, capture_output=True, check=True)
+    try:
+        proc = subprocess.run(cmd, capture_output=True, check=True)
+    except FileNotFoundError:
+        raise RuntimeError(
+            'ffmpeg tidak ditemukan — tidak bisa membaca MP3/M4A. '
+            'Pastikan ffmpeg ter-bundle (imageio-ffmpeg) atau terpasang di sistem.')
+    except subprocess.CalledProcessError as e:
+        err = (e.stderr or b'').decode('utf-8', 'ignore')[-400:]
+        raise RuntimeError(f'Gagal decode file audio (ffmpeg): {err.strip()}')
 
-    audio, sr = sf.read(output_path)
+    if not os.path.exists(output_path) or os.path.getsize(output_path) < 100:
+        raise RuntimeError('Decode menghasilkan file kosong — file sumber mungkin rusak.')
+
+    audio, sr = sf.read(output_path, always_2d=True)
+    # Pastikan selalu stereo (n, 2) agar tahap berikutnya konsisten.
+    if audio.shape[1] == 1:
+        audio = mono_to_stereo(audio)
+    elif audio.shape[1] > 2:
+        audio = audio[:, :2]
     return audio, sr, output_path
 
 
@@ -82,24 +146,7 @@ def mono_to_stereo(audio):
 
 
 def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
-    import numpy as _np
-    data = _np.asarray(audio)
-    channels = 1 if data.ndim == 1 else data.shape[1]
-    # Tulis WAV sambil menyematkan metadata aplikasi (INFO chunk standar WAV),
-    # sehingga hasil mastering teridentifikasi berasal dari GRCmasteringStudio —
-    # sebelumnya output tidak punya metadata sama sekali.
-    try:
-        with sf.SoundFile(output_path, 'w', samplerate=int(sr),
-                          channels=channels, subtype=subtype) as f:
-            try:
-                f.software = 'Pro Tools'
-                f.comment = 'Rendered with Pro Tools'
-            except Exception:
-                pass  # sebagian versi/format tak dukung tag — tetap tulis audio
-            f.write(data)
-    except Exception:
-        # fallback: penulisan biasa tanpa metadata (jangan pernah gagal simpan)
-        sf.write(output_path, data, int(sr), subtype=subtype)
+    sf.write(output_path, audio, sr, subtype=subtype)
     return output_path
 
 
