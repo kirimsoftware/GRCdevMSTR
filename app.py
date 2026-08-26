@@ -104,9 +104,16 @@ def upload():
     filepath = os.path.join(UPLOAD_FOLDER, saved_name)
     file.save(filepath)
 
+    # Nama ASLI untuk ditampilkan & penamaan download (spasi dipertahankan).
+    # secure_filename dipakai HANYA untuk nama file di disk (keamanan), bukan
+    # untuk display — kalau tidak, 'Airport Sweatshirt.wav' jadi
+    # 'Airport_Sweatshirt.wav'. Buang komponen path demi keamanan, lalu pakai
+    # apa adanya.
+    display_name = os.path.basename(file.filename or fname).replace('/', '').replace('\\', '')
+
     return jsonify({
         'task_id': task_id,
-        'filename': fname,
+        'filename': display_name,
         'filepath': filepath,
     })
 
