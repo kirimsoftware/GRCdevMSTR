@@ -58,26 +58,34 @@ datas += collect_data_files('librosa')
 # app terpaket -> decode MP3/M4A gagal ('No such file: ffmpeg'). Sertakan
 # file binary-nya secara EKSPLISIT, baik sebagai data maupun binaries.
 datas += collect_data_files('imageio_ffmpeg')
+binaries_ffmpeg_extra = None
 try:
     import imageio_ffmpeg as _iff
     import glob as _glob
+    # Pastikan binary sudah terunduh (imageio-ffmpeg unduh on-demand).
+    try:
+        _exe = _iff.get_ffmpeg_exe()
+        print(f'[spec] imageio ffmpeg exe: {_exe} (ada={os.path.isfile(_exe)})')
+    except Exception as _ee:
+        print(f'[spec] PERINGATAN: get_ffmpeg_exe gagal: {_ee}')
     _iff_bin_dir = os.path.join(os.path.dirname(_iff.__file__), 'binaries')
-    for _b in _glob.glob(os.path.join(_iff_bin_dir, 'ffmpeg-*')):
-        # taruh di dua lokasi agar _find_ffmpeg pasti menemukannya
+    _found = _glob.glob(os.path.join(_iff_bin_dir, 'ffmpeg-*'))
+    for _b in _found:
         datas.append((_b, 'imageio_ffmpeg/binaries'))
         binaries_ffmpeg_extra = _b
-        print(f'[spec] bundling imageio ffmpeg: {os.path.basename(_b)}')
+        print(f'[spec] bundling imageio ffmpeg binary: {os.path.basename(_b)}')
+    if not _found:
+        print('[spec] PERINGATAN BESAR: binary ffmpeg-* TIDAK ditemukan di '
+              f'{_iff_bin_dir}. MP3/M4A TIDAK akan bisa dibaca. Workflow harus '
+              'menjalankan get_ffmpeg_exe() dulu untuk mengunduhnya.')
 except Exception as _e:
-    print(f'[spec] PERINGATAN: gagal menemukan binary imageio-ffmpeg: {_e}')
+    print(f'[spec] PERINGATAN: gagal menyiapkan binary imageio-ffmpeg: {_e}')
 
 # --- Bundled ffmpeg (disiapkan oleh CI atau manual di folder vendor/) ---
 binaries = []
 # tambahkan binary imageio-ffmpeg juga ke 'binaries' (dengan flag executable)
-try:
-    if 'binaries_ffmpeg_extra' in dir() and os.path.isfile(binaries_ffmpeg_extra):
-        binaries.append((binaries_ffmpeg_extra, 'imageio_ffmpeg/binaries'))
-except Exception:
-    pass
+if binaries_ffmpeg_extra and os.path.isfile(binaries_ffmpeg_extra):
+    binaries.append((binaries_ffmpeg_extra, 'imageio_ffmpeg/binaries'))
 ffmpeg_name = 'ffmpeg.exe' if IS_WIN else 'ffmpeg'
 ffmpeg_path = os.path.join('vendor', ffmpeg_name)
 if os.path.isfile(ffmpeg_path):
