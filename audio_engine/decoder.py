@@ -7,6 +7,81 @@ import soundfile as sf
 from config import TEMP_FOLDER, DEFAULT_SAMPLE_RATE
 
 
+def _user_ffmpeg_path():
+    """Lokasi ffmpeg yang diunduh aplikasi (folder data user, selalu writable)."""
+    from config import _user_data_dir
+    d = os.path.join(_user_data_dir(), 'bin')
+    name = 'ffmpeg.exe' if os.name == 'nt' else 'ffmpeg'
+    return os.path.join(d, name)
+
+
+def _download_ffmpeg():
+    """Unduh ffmpeg statis ke folder data user (sekali saja). Dipakai sebagai
+    jalan terakhir kalau ffmpeg tak ter-bundle & tak ada di sistem.
+    Return path bila berhasil, None bila gagal."""
+    import urllib.request, platform, zipfile, tarfile, tempfile, stat as _stat
+    dest = _user_ffmpeg_path()
+    if os.path.isfile(dest) and os.access(dest, os.X_OK):
+        return dest
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+
+    sysname = platform.system().lower()
+    machine = platform.machine().lower()
+    # Sumber: build statis ffmpeg resmi & tepercaya per-OS.
+    url = None
+    if sysname == 'darwin':
+        # evermeet menyediakan ffmpeg statis macOS (universal/x86_64).
+        url = 'https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip'
+    elif sysname == 'windows' or os.name == 'nt':
+        url = ('https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/'
+               'ffmpeg-master-latest-win64-gpl.zip')
+    elif sysname == 'linux':
+        arch = 'arm64' if 'aarch64' in machine or 'arm64' in machine else 'amd64'
+        url = f'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-{arch}-static.tar.xz'
+    if not url:
+        return None
+
+    try:
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        tmp.close()
+        req = urllib.request.Request(url, headers={'User-Agent': 'GRCmasteringStudio'})
+        with urllib.request.urlopen(req, timeout=120) as r, open(tmp.name, 'wb') as f:
+            shutil.copyfileobj(r, f)
+
+        # Ekstrak binary ffmpeg dari arsip.
+        extracted = None
+        if tmp.name.endswith('.zip') or zipfile.is_zipfile(tmp.name):
+            with zipfile.ZipFile(tmp.name) as z:
+                for n in z.namelist():
+                    base = os.path.basename(n)
+                    if base in ('ffmpeg', 'ffmpeg.exe'):
+                        with z.open(n) as src, open(dest, 'wb') as out:
+                            shutil.copyfileobj(src, out)
+                        extracted = dest
+                        break
+        else:
+            with tarfile.open(tmp.name) as t:
+                for m in t.getmembers():
+                    if os.path.basename(m.name) == 'ffmpeg' and m.isfile():
+                        src = t.extractfile(m)
+                        with open(dest, 'wb') as out:
+                            shutil.copyfileobj(src, out)
+                        extracted = dest
+                        break
+        try:
+            os.remove(tmp.name)
+        except Exception:
+            pass
+
+        if extracted and os.path.isfile(extracted):
+            os.chmod(extracted, os.stat(extracted).st_mode |
+                     _stat.S_IXUSR | _stat.S_IXGRP | _stat.S_IXOTH)
+            return extracted
+    except Exception:
+        return None
+    return None
+
+
 def _ensure_exec(path):
     """Pastikan file bisa dieksekusi (macOS/Linux sering kehilangan flag +x
     setelah dibundel PyInstaller)."""
@@ -70,18 +145,49 @@ def _find_ffmpeg():
             if os.path.isfile(cand):
                 return _ensure_exec(cand)
 
-    # (4) ffmpeg sistem
+    # (4) ffmpeg yang sudah diunduh aplikasi sebelumnya
+    _u = _user_ffmpeg_path()
+    if os.path.isfile(_u):
+        return _ensure_exec(_u)
+
+    # (5) ffmpeg sistem
     return shutil.which('ffmpeg') or 'ffmpeg'
 
 
 FFMPEG_BIN = _find_ffmpeg()
 
 
-def decode_mp3(input_path, target_sr=DEFAULT_SAMPLE_RATE):
+def _resolve_ffmpeg(progress_callback=None):
+    """Pastikan ada ffmpeg yang bisa dijalankan. Kalau FFMPEG_BIN tidak valid,
+    coba unduh otomatis ke folder user. Return path ffmpeg atau raise error."""
+    global FFMPEG_BIN
+    # FFMPEG_BIN valid kalau berupa path file yang ada, atau nama di PATH.
+    def _usable(p):
+        if not p:
+            return False
+        if os.path.isfile(p):
+            return True
+        return shutil.which(p) is not None
+    if _usable(FFMPEG_BIN):
+        return FFMPEG_BIN
+    # coba unduh
+    if progress_callback:
+        progress_callback(5, 'Menyiapkan ffmpeg (unduh sekali)...')
+    got = _download_ffmpeg()
+    if got and _usable(got):
+        FFMPEG_BIN = got
+        return got
+    raise RuntimeError(
+        'ffmpeg tidak tersedia dan gagal diunduh otomatis — tidak bisa membaca '
+        'MP3/M4A. Periksa koneksi internet, atau pasang ffmpeg di sistem.')
+
+
+def decode_mp3(input_path, target_sr=DEFAULT_SAMPLE_RATE, progress_callback=None):
     output_path = os.path.join(TEMP_FOLDER, os.path.basename(input_path) + '_decoded.wav')
 
+    ffmpeg = _resolve_ffmpeg(progress_callback)
     cmd = [
-        FFMPEG_BIN, '-y', '-i', input_path,
+        ffmpeg, '-y', '-i', input_path,
         '-ar', str(target_sr),
         '-ac', '2',
         '-c:a', 'pcm_s24le',
