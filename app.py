@@ -493,7 +493,8 @@ def album_save():
     saved = 0
     for it in items:
         fn = secure_filename(it.get('file', ''))
-        nm = secure_filename(it.get('name', fn)) or fn
+        _nm_raw = it.get('name', fn) or fn
+        nm = os.path.basename(_nm_raw).replace('/', '').replace('\\', '') or fn
         src = os.path.join(OUTPUT_FOLDER, fn)
         if not os.path.exists(src):
             continue
@@ -535,7 +536,11 @@ def save_to_downloads():
     """Salin hasil ke folder Downloads user — andal di jendela desktop."""
     import shutil
     filename = request.args.get('file', '')
-    save_name = secure_filename(request.args.get('name', filename)) or 'output.wav'
+    # Nama simpan mempertahankan spasi (jangan secure_filename — itu mengubah
+    # 'Lagu Baru Master.wav' jadi 'Lagu_Baru_Master.wav'). Cukup buang komponen
+    # path demi keamanan.
+    raw_name = request.args.get('name', filename) or 'output.wav'
+    save_name = os.path.basename(raw_name).replace('/', '').replace('\\', '') or 'output.wav'
     src = os.path.join(OUTPUT_FOLDER, secure_filename(filename))
     if not os.path.exists(src):
         return jsonify({'error': 'File not found'}), 404
