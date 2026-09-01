@@ -259,7 +259,7 @@ def _make_originator_ref(length=12):
 
 
 def _write_bext_chunk(wav_path, originator='Pro Tools',
-                      originator_ref=None, description='Mastered with Pro Tools'):
+                      originator_ref=None, description=''):
     """Sisipkan chunk BWF 'bext' (Broadcast Wave Format, EBU Tech 3285) ke file
     WAV yang sudah ada. Berisi Originator, OriginationDate/Time (waktu render),
     dan OriginatorReference acak 12 karakter. Ini standar yang dibaca DAW pro.
@@ -288,8 +288,7 @@ def _write_bext_chunk(wav_path, originator='Pro Tools',
     bext += b'\x00' * 64                                   # UMID
     bext += struct.pack('<hHHHH', 0, 0, 0, 0, 0)          # loudness fields (5x)
     bext += b'\x00' * 180                                  # Reserved
-    # CodingHistory (opsional) — singkat
-    bext += b'A=PCM,F=%d,W=24,M=stereo,T=Pro Tools\r\n' % 0
+    # CodingHistory sengaja dikosongkan (tidak ditulis).
 
     # chunk harus genap; tambahkan pad byte bila ganjil
     if len(bext) % 2 == 1:
@@ -297,13 +296,25 @@ def _write_bext_chunk(wav_path, originator='Pro Tools',
 
     chunk = b'bext' + struct.pack('<I', len(bext)) + bext
 
-    # Baca WAV, sisipkan chunk bext tepat setelah header 'WAVE', perbarui ukuran RIFF.
+    # INFO chunk berisi ISFT (Software) = 'Pro Tools' — ditulis manual
+    # agar BERSIH tanpa tambahan '(libsndfile-...)'.
+    def _info_sub(tag, text):
+        b = text.encode('ascii', 'replace') + b'\x00'
+        if len(b) % 2 == 1:
+            b += b'\x00'
+        return tag + struct.pack('<I', len(b)) + b
+    info_body = b'INFO' + _info_sub(b'ISFT', 'Pro Tools')
+    list_chunk = b'LIST' + struct.pack('<I', len(info_body)) + info_body
+
+    extra = chunk + list_chunk
+
+    # Baca WAV, sisipkan chunk tepat setelah header 'WAVE', perbarui ukuran RIFF.
     with open(wav_path, 'rb') as f:
         data = f.read()
     if data[:4] != b'RIFF' or data[8:12] != b'WAVE':
         return  # bukan WAV standar, lewati saja
     # sisipkan setelah 12 byte pertama (RIFF + size + WAVE)
-    new_data = data[:12] + chunk + data[12:]
+    new_data = data[:12] + extra + data[12:]
     # perbarui ukuran RIFF (byte 4-8) = total - 8
     new_size = len(new_data) - 8
     new_data = new_data[:4] + struct.pack('<I', new_size) + new_data[8:]
@@ -315,24 +326,22 @@ def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
     import numpy as _np
     data = _np.asarray(audio)
     channels = 1 if data.ndim == 1 else data.shape[1]
-    # Sematkan metadata aplikasi (INFO chunk WAV) agar hasil mastering
-    # teridentifikasi berasal dari GRCmasteringStudio.
+    # Tulis audio tanpa tag software soundfile (soundfile/libsndfile menambahkan
+    # embel-embel '(libsndfile-x.y.z)' yang tidak diinginkan). Tag Software
+    # ditulis manual & bersih di _write_bext_chunk (INFO chunk).
     try:
         with sf.SoundFile(output_path, 'w', samplerate=int(sr),
                           channels=channels, subtype=subtype) as f:
-            try:
-                f.software = 'Pro Tools'
-            except Exception:
-                pass  # sebagian versi/format tak dukung tag — tetap tulis audio
             f.write(data)
     except Exception:
         # fallback: penulisan biasa (jangan pernah gagal simpan)
         sf.write(output_path, data, int(sr), subtype=subtype)
-    # Tambahkan chunk BWF 'bext' (Originator, tanggal/jam render, ref acak).
+    # Tambahkan chunk BWF 'bext' (Originator, tanggal/jam render, ref acak)
+    # + INFO chunk 'ISFT' = Pro Tools (bersih tanpa libsndfile).
     try:
         _write_bext_chunk(output_path)
     except Exception:
-        pass  # metadata BWF opsional — jangan gagalkan penyimpanan
+        pass  # metadata opsional — jangan gagalkan penyimpanan
     return output_path
 
 
