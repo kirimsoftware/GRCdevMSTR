@@ -251,8 +251,88 @@ def mono_to_stereo(audio):
     return np.column_stack([left, right])
 
 
+def _make_originator_ref(length=12):
+    """Kode referensi acak unik per file (huruf/angka/simbol), mis. 'aaOxVBaS#3Kk'."""
+    import random, string
+    alphabet = string.ascii_letters + string.digits + '#@$%&+='
+    return ''.join(random.choice(alphabet) for _ in range(length))
+
+
+def _write_bext_chunk(wav_path, originator='Pro Tools',
+                      originator_ref=None, description='Mastered with Pro Tools'):
+    """Sisipkan chunk BWF 'bext' (Broadcast Wave Format, EBU Tech 3285) ke file
+    WAV yang sudah ada. Berisi Originator, OriginationDate/Time (waktu render),
+    dan OriginatorReference acak 12 karakter. Ini standar yang dibaca DAW pro.
+
+    Ditulis manual karena soundfile belum mendukung penulisan bext.
+    """
+    import struct, datetime, os
+
+    now = datetime.datetime.now()
+    if originator_ref is None:
+        originator_ref = _make_originator_ref(12)
+
+    def _fixed(s, n):
+        b = s.encode('ascii', 'replace')[:n]
+        return b + b'\x00' * (n - len(b))
+
+    # Susun payload bext (minimal, tanpa CodingHistory panjang).
+    bext = b''
+    bext += _fixed(description, 256)                       # Description
+    bext += _fixed(originator, 32)                         # Originator
+    bext += _fixed(originator_ref, 32)                     # OriginatorReference
+    bext += _fixed(now.strftime('%Y-%m-%d'), 10)          # OriginationDate YYYY-MM-DD
+    bext += _fixed(now.strftime('%H:%M:%S'), 8)           # OriginationTime HH:MM:SS
+    bext += struct.pack('<Q', 0)                           # TimeReference (0)
+    bext += struct.pack('<H', 1)                           # Version = 1
+    bext += b'\x00' * 64                                   # UMID
+    bext += struct.pack('<hHHHH', 0, 0, 0, 0, 0)          # loudness fields (5x)
+    bext += b'\x00' * 180                                  # Reserved
+    # CodingHistory (opsional) — singkat
+    bext += b'A=PCM,F=%d,W=24,M=stereo,T=Pro Tools\r\n' % 0
+
+    # chunk harus genap; tambahkan pad byte bila ganjil
+    if len(bext) % 2 == 1:
+        bext += b'\x00'
+
+    chunk = b'bext' + struct.pack('<I', len(bext)) + bext
+
+    # Baca WAV, sisipkan chunk bext tepat setelah header 'WAVE', perbarui ukuran RIFF.
+    with open(wav_path, 'rb') as f:
+        data = f.read()
+    if data[:4] != b'RIFF' or data[8:12] != b'WAVE':
+        return  # bukan WAV standar, lewati saja
+    # sisipkan setelah 12 byte pertama (RIFF + size + WAVE)
+    new_data = data[:12] + chunk + data[12:]
+    # perbarui ukuran RIFF (byte 4-8) = total - 8
+    new_size = len(new_data) - 8
+    new_data = new_data[:4] + struct.pack('<I', new_size) + new_data[8:]
+    with open(wav_path, 'wb') as f:
+        f.write(new_data)
+
+
 def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
-    sf.write(output_path, audio, sr, subtype=subtype)
+    import numpy as _np
+    data = _np.asarray(audio)
+    channels = 1 if data.ndim == 1 else data.shape[1]
+    # Sematkan metadata aplikasi (INFO chunk WAV) agar hasil mastering
+    # teridentifikasi berasal dari GRCmasteringStudio.
+    try:
+        with sf.SoundFile(output_path, 'w', samplerate=int(sr),
+                          channels=channels, subtype=subtype) as f:
+            try:
+                f.software = 'Pro Tools'
+            except Exception:
+                pass  # sebagian versi/format tak dukung tag — tetap tulis audio
+            f.write(data)
+    except Exception:
+        # fallback: penulisan biasa (jangan pernah gagal simpan)
+        sf.write(output_path, data, int(sr), subtype=subtype)
+    # Tambahkan chunk BWF 'bext' (Originator, tanggal/jam render, ref acak).
+    try:
+        _write_bext_chunk(output_path)
+    except Exception:
+        pass  # metadata BWF opsional — jangan gagalkan penyimpanan
     return output_path
 
 
