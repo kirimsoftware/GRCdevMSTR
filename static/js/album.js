@@ -201,8 +201,10 @@ const Album = {
         let ftSettings = {};
         if (useFineTune && typeof Uploader !== 'undefined' && Uploader.collectMixSettings) {
             ftSettings = Uploader.collectMixSettings();
-            delete ftSettings.stereo_width;
         }
+        // Stereo width KHUSUS album (seragam semua lagu) — pakai kontrol album,
+        // bukan nilai panel Master single.
+        ftSettings.stereo_width = parseInt(document.getElementById('albumStereoWidth')?.value || '110');
         // Sample rate & bit depth berlaku seragam untuk semua lagu album.
         ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
         ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
@@ -332,8 +334,10 @@ const Album = {
         let ftSettings = {};
         if (useFineTune && typeof Uploader !== 'undefined' && Uploader.collectMixSettings) {
             ftSettings = Uploader.collectMixSettings();
-            delete ftSettings.stereo_width;
         }
+        // Stereo width KHUSUS album (seragam semua lagu) — pakai kontrol album,
+        // bukan nilai panel Master single.
+        ftSettings.stereo_width = parseInt(document.getElementById('albumStereoWidth')?.value || '110');
         ftSettings.sample_rate = parseInt(document.getElementById('albumSampleRate')?.value || '44100');
         ftSettings.bit_depth = document.getElementById('albumBitDepth')?.value || '24';
         this.processTrack(t, i, genre, platform, adaptive, removeWm, ftSettings)

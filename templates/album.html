@@ -60,6 +60,12 @@
                             <option value="16">16-bit (dithered)</option>
                         </select>
                     </div>
+                    <div class="setting-row">
+                        <label>Stereo Width <span id="albumStereoWidthVal" style="color:var(--accent,#4fd1e0);font-variant-numeric:tabular-nums">110%</span></label>
+                        <input type="range" id="albumStereoWidth" min="90" max="130" value="110" step="1"
+                               style="width:100%"
+                               oninput="document.getElementById('albumStereoWidthVal').textContent=this.value+'%'">
+                    </div>
                     <div class="setting-row toggle-labeled">
                         <label>Adaptive (per track)</label>
                         <label class="toggle">
