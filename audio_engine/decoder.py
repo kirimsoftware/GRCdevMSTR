@@ -296,17 +296,16 @@ def _write_bext_chunk(wav_path, originator='Pro Tools',
 
     chunk = b'bext' + struct.pack('<I', len(bext)) + bext
 
-    # INFO chunk berisi ISFT (Software) = 'Pro Tools' — ditulis manual
-    # agar BERSIH tanpa tambahan '(libsndfile-...)'.
-    def _info_sub(tag, text):
-        b = text.encode('ascii', 'replace') + b'\x00'
-        if len(b) % 2 == 1:
-            b += b'\x00'
-        return tag + struct.pack('<I', len(b)) + b
-    info_body = b'INFO' + _info_sub(b'ISFT', 'Pro Tools')
-    list_chunk = b'LIST' + struct.pack('<I', len(info_body)) + info_body
-
-    extra = chunk + list_chunk
+    # TAG 'Software' (ISFT) SENGAJA TIDAK DITULIS LAGI (permintaan user).
+    # Dulu di sini disisipkan chunk LIST/INFO berisi ISFT='GRCmasteringStudio'.
+    # Sekarang HANYA chunk 'bext' yang ditulis, jadi Originator,
+    # OriginationDate, OriginationTime, dan OriginatorReference (12 karakter
+    # acak) tetap persis seperti sebelumnya - yang hilang cuma Software.
+    #
+    # Catatan: ISFT dan bext berada di DUA tempat berbeda dalam file WAV
+    # (chunk LIST/INFO vs chunk bext), jadi menghapus yang satu tidak
+    # menyentuh yang lain sama sekali.
+    extra = chunk
 
     # Baca WAV, sisipkan chunk tepat setelah header 'WAVE', perbarui ukuran RIFF.
     with open(wav_path, 'rb') as f:
@@ -322,13 +321,77 @@ def _write_bext_chunk(wav_path, originator='Pro Tools',
         f.write(new_data)
 
 
+def _strip_software_tag(wav_path):
+    """Buang tag Software (ISFT) dari file WAV, kalau ada.
+
+    KENAPA PERLU, padahal kita sudah berhenti menulisnya sendiri: libsndfile
+    (dipakai lewat `soundfile`) bisa menulis ISFT-nya SENDIRI saat menyimpan
+    WAV - itu justru asal muasal embel-embel '(libsndfile-x.y.z)' yang dulu
+    dikeluhkan. Jadi berhenti menulis ISFT versi kita belum tentu membuat
+    file-nya benar-benar bebas tag Software.
+
+    Fungsi ini menyapu chunk tingkat atas, membuang sub-chunk ISFT di dalam
+    LIST/INFO, lalu MENGHAPUS seluruh chunk LIST kalau isinya jadi kosong,
+    dan memperbarui ukuran RIFF. Chunk lain - termasuk 'bext', 'fmt ', dan
+    'data' - disalin apa adanya, byte per byte.
+
+    Best-effort: kalau file bukan WAV standar atau ada yang tidak beres,
+    file dibiarkan apa adanya. Tidak pernah melempar error.
+    """
+    import struct
+    try:
+        with open(wav_path, 'rb') as f:
+            data = f.read()
+        if data[:4] != b'RIFF' or data[8:12] != b'WAVE':
+            return False
+
+        keluar = bytearray(data[:12])       # RIFF + size + WAVE
+        pos, berubah = 12, False
+        while pos + 8 <= len(data):
+            cid = data[pos:pos + 4]
+            csz = struct.unpack('<I', data[pos + 4:pos + 8])[0]
+            isi = data[pos + 8:pos + 8 + csz]
+            maju = 8 + csz + (csz % 2)      # chunk selalu rata genap
+
+            if cid == b'LIST' and isi[:4] == b'INFO':
+                # saring sub-chunk INFO, buang ISFT
+                sisa, sub = bytearray(b'INFO'), 4
+                while sub + 8 <= len(isi):
+                    sid = isi[sub:sub + 4]
+                    ssz = struct.unpack('<I', isi[sub + 4:sub + 8])[0]
+                    smaju = 8 + ssz + (ssz % 2)
+                    if sid == b'ISFT':
+                        berubah = True      # dibuang
+                    else:
+                        sisa += isi[sub:sub + smaju]
+                    sub += smaju
+                if len(sisa) > 4:           # masih ada tag lain -> pertahankan LIST
+                    if len(sisa) % 2 == 1:
+                        sisa += b'\x00'
+                    keluar += b'LIST' + struct.pack('<I', len(sisa)) + sisa
+                # kalau cuma tersisa 'INFO' kosong -> chunk LIST dibuang total
+            else:
+                keluar += data[pos:pos + maju]
+            pos += maju
+
+        if not berubah:
+            return False
+        keluar[4:8] = struct.pack('<I', len(keluar) - 8)   # perbarui ukuran RIFF
+        with open(wav_path, 'wb') as f:
+            f.write(bytes(keluar))
+        return True
+    except Exception:
+        return False
+
+
 def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
     import numpy as _np
     data = _np.asarray(audio)
     channels = 1 if data.ndim == 1 else data.shape[1]
     # Tulis audio tanpa tag software soundfile (soundfile/libsndfile menambahkan
     # embel-embel '(libsndfile-x.y.z)' yang tidak diinginkan). Tag Software
-    # ditulis manual & bersih di _write_bext_chunk (INFO chunk).
+    # sekarang TIDAK ditulis sama sekali - kalau libsndfile tetap menyisipkannya
+    # sendiri, dibuang lagi oleh _strip_software_tag() di bawah.
     try:
         with sf.SoundFile(output_path, 'w', samplerate=int(sr),
                           channels=channels, subtype=subtype) as f:
@@ -336,12 +399,17 @@ def write_wav(audio, output_path, sr=DEFAULT_SAMPLE_RATE, subtype='PCM_24'):
     except Exception:
         # fallback: penulisan biasa (jangan pernah gagal simpan)
         sf.write(output_path, data, int(sr), subtype=subtype)
-    # Tambahkan chunk BWF 'bext' (Originator, tanggal/jam render, ref acak)
-    # + INFO chunk 'ISFT' = Pro Tools (bersih tanpa libsndfile).
+    # Tambahkan chunk BWF 'bext' (Originator, tanggal/jam render, ref acak).
+    # Tag Software/ISFT TIDAK ditulis lagi.
     try:
         _write_bext_chunk(output_path)
     except Exception:
         pass  # metadata opsional — jangan gagalkan penyimpanan
+    # Jaring pengaman: buang ISFT yang mungkin ditulis libsndfile sendiri.
+    try:
+        _strip_software_tag(output_path)
+    except Exception:
+        pass
     return output_path
 
 
