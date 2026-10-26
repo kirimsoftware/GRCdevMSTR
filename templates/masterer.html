@@ -4,6 +4,14 @@
     <div class="card premaster-card">
         <div class="card-header">
             <h3>Pre-Master &mdash; Fine Tuning</h3>
+            <div class="preset-bar" style="display:flex;gap:6px;align-items:center;margin-left:16px">
+                <select id="ftPresetSelect" title="Load saved preset"
+                        style="min-width:150px;padding:4px 6px">
+                    <option value="">— Preset —</option>
+                </select>
+                <button class="btn btn-sm" id="btnFtPresetSave" title="Save current EQ + compressor as preset">&#128190; Save</button>
+                <button class="btn btn-sm" id="btnFtPresetDelete" title="Delete selected preset">&#128465;</button>
+            </div>
             <div class="card-actions preview-actions">
                 <!-- Meter & monitor IN/OUT/REF disembunyikan: dulu milik Live Preview.
                      A/B (IN vs OUT) kini dilakukan di player bawah (tombol A/B/R) yang

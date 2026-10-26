@@ -567,6 +567,71 @@ def get_preset(preset_type, preset_name):
         return jsonify(json.load(f))
 
 
+# --- User presets (Fine Tuning: EQ + compressor) disimpan di folder data user ---
+def _user_preset_dir():
+    from config import OUTPUT_FOLDER
+    d = os.path.join(os.path.dirname(OUTPUT_FOLDER), 'presets')
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def _safe_preset_name(name):
+    keep = ''.join(c for c in (name or '') if c.isalnum() or c in ' -_()').strip()
+    return keep[:60] or 'Untitled'
+
+
+@app.route('/api/userpresets', methods=['GET'])
+def list_user_presets():
+    d = _user_preset_dir()
+    out = []
+    for fn in sorted(os.listdir(d)):
+        if fn.endswith('.json'):
+            try:
+                with open(os.path.join(d, fn)) as f:
+                    data = json.load(f)
+                out.append({'name': data.get('name', fn[:-5]), 'file': fn})
+            except Exception:
+                continue
+    return jsonify({'presets': out})
+
+
+@app.route('/api/userpresets', methods=['POST'])
+def save_user_preset():
+    data = request.get_json(force=True) or {}
+    name = _safe_preset_name(data.get('name'))
+    settings = data.get('settings')
+    if not isinstance(settings, dict):
+        return jsonify({'error': 'Invalid settings'}), 400
+    payload = {'name': name, 'settings': settings}
+    d = _user_preset_dir()
+    filepath = os.path.join(d, f'{name}.json')
+    with open(filepath, 'w') as f:
+        json.dump(payload, f, indent=2)
+    return jsonify({'ok': True, 'name': name, 'file': f'{name}.json'})
+
+
+@app.route('/api/userpresets/<preset_file>', methods=['GET'])
+def get_user_preset(preset_file):
+    d = _user_preset_dir()
+    filepath = os.path.join(d, os.path.basename(preset_file))
+    if not os.path.exists(filepath):
+        return jsonify({'error': 'Not found'}), 404
+    with open(filepath) as f:
+        return jsonify(json.load(f))
+
+
+@app.route('/api/userpresets/<preset_file>', methods=['DELETE'])
+def delete_user_preset(preset_file):
+    d = _user_preset_dir()
+    filepath = os.path.join(d, os.path.basename(preset_file))
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+    return jsonify({'ok': True})
+
+
 if __name__ == '__main__':
     cleanup_old_files(FILE_RETENTION_HOURS)
     print('=' * 50)

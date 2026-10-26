@@ -1,0 +1,16 @@
+{
+  "name": "Vokal Cerah",
+  "settings": {
+    "eq_gains": {
+      "1000": 3.0,
+      "4000": -2.0
+    },
+    "eq_q": 1.4,
+    "compressor": [
+      {
+        "low": 20,
+        "high": 200
+      }
+    ]
+  }
+}
